@@ -4,7 +4,7 @@ Professional Trading Tools untuk Trader Indonesia - Kumpulan alat trading canggi
 
 ## 🚀 Demo
 
-**[Live Demo](https://your-username.github.io/trading-tools/)**
+**[Live Demo](https://hlgivn-star.github.io/wjc/))**
 
 ## 📱 Fitur Utama
 
