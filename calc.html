@@ -1,0 +1,1150 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Day Trading Calculator - Ajaib</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-light: #3b82f6;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --dark: #1f2937;
+            --light: #f8fafc;
+            --gray: #6b7280;
+            --border: #e5e7eb;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #f0f4ff 0%, #e6f0ff 100%);
+            color: var(--dark);
+            line-height: 1.6;
+            padding: 16px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 24px;
+            padding: 16px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        }
+        
+        h1 {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 8px;
+        }
+        
+        .subtitle {
+            color: var(--gray);
+            font-size: 14px;
+        }
+        
+        .columns-container {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        @media (max-width: 768px) {
+            .columns-container {
+                flex-direction: column;
+            }
+        }
+        
+        .column {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            padding: 20px;
+            margin-bottom: 20px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .card-title {
+            font-size: 18px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .badge {
+            background: var(--primary);
+            color: white;
+            border-radius: 20px;
+            padding: 4px 10px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        
+        .transaction-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 16px;
+            flex: 1;
+        }
+        
+        .transaction-table th {
+            text-align: left;
+            padding: 10px 8px;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--gray);
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .transaction-table td {
+            padding: 8px;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .transaction-table input {
+            width: 100%;
+            padding: 8px 10px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+        
+        .transaction-table input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+        
+        .transaction-table .total-cell {
+            font-weight: 500;
+            color: var(--dark);
+        }
+        
+        .btn {
+            padding: 10px 16px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 500;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: var(--primary-light);
+        }
+        
+        .btn-danger {
+            background: var(--danger);
+            color: white;
+            padding: 6px 10px;
+            font-size: 12px;
+        }
+        
+        .btn-danger:hover {
+            background: #dc2626;
+        }
+        
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+        }
+        
+        .summary-item {
+            padding: 12px;
+            border-radius: 8px;
+            background: var(--light);
+        }
+        
+        .summary-label {
+            font-size: 12px;
+            color: var(--gray);
+            margin-bottom: 4px;
+        }
+        
+        .summary-value {
+            font-size: 16px;
+            font-weight: 600;
+        }
+        
+        .summary-total {
+            grid-column: 1 / -1;
+            background: var(--primary);
+            color: white;
+            padding: 16px;
+        }
+        
+        .summary-total .summary-label {
+            color: rgba(255, 255, 255, 0.8);
+        }
+        
+        .summary-total .summary-value {
+            font-size: 20px;
+        }
+        
+        .positive {
+            color: var(--success);
+        }
+        
+        .negative {
+            color: var(--danger);
+        }
+        
+        .footer {
+            text-align: center;
+            margin-top: 24px;
+            color: var(--gray);
+            font-size: 12px;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 16px;
+        }
+        
+        @media (max-width: 600px) {
+            .summary-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .card {
+                padding: 16px;
+            }
+            
+            .transaction-table th, 
+            .transaction-table td {
+                padding: 6px 4px;
+            }
+        }
+        
+        .buy-column .badge {
+            background: var(--danger);
+        }
+        
+        .sell-column .badge {
+            background: var(--success);
+        }
+        
+        .card-footer {
+            margin-top: auto;
+            padding-top: 16px;
+            border-top: 1px solid var(--border);
+        }
+        
+        /* Styling untuk Kalkulator Resiko */
+        .risk-calculator {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+        
+        .risk-input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        
+        .risk-input-group label {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--dark);
+        }
+        
+        .risk-input-group input {
+            padding: 10px 12px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+        
+        .risk-input-group input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+        
+        .risk-result {
+            grid-column: 1 / -1;
+            background: var(--light);
+            padding: 12px;
+            border-radius: 8px;
+            border-left: 4px solid var(--primary);
+        }
+        
+        .risk-result .summary-value {
+            font-size: 18px;
+        }
+        
+        .risk-note {
+            grid-column: 1 / -1;
+            font-size: 12px;
+            color: var(--gray);
+            text-align: center;
+            margin-top: 6px;
+        }
+        
+        /* Styling untuk Kalkulator Lot */
+        .lot-calculator {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+        
+        .lot-result {
+            grid-column: 1 / -1;
+            background: var(--light);
+            padding: 12px;
+            border-radius: 8px;
+            border-left: 4px solid var(--warning);
+        }
+        
+        .lot-result .summary-value {
+            font-size: 18px;
+        }
+        
+        @media (max-width: 768px) {
+            .risk-calculator, .lot-calculator {
+                grid-template-columns: 1fr;
+            }
+            
+            .risk-result, .lot-result {
+                grid-column: 1;
+            }
+        }
+        
+        /* Styling untuk User Manual & FAQ */
+        .help-section {
+            margin-top: 30px;
+        }
+        
+        .help-tabs {
+            display: flex;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 20px;
+        }
+        
+        .help-tab {
+            padding: 12px 20px;
+            cursor: pointer;
+            font-weight: 500;
+            border-bottom: 3px solid transparent;
+            transition: all 0.2s;
+        }
+        
+        .help-tab.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+        }
+        
+        .help-content {
+            display: none;
+        }
+        
+        .help-content.active {
+            display: block;
+        }
+        
+        .help-item {
+            margin-bottom: 20px;
+        }
+        
+        .help-item h3 {
+            font-size: 16px;
+            margin-bottom: 8px;
+            color: var(--dark);
+        }
+        
+        .help-item p {
+            font-size: 14px;
+            color: var(--gray);
+            line-height: 1.6;
+        }
+        
+        .help-item ul {
+            margin-left: 20px;
+            font-size: 14px;
+            color: var(--gray);
+        }
+        
+        .help-item li {
+            margin-bottom: 6px;
+        }
+        
+        .faq-item {
+            margin-bottom: 16px;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 16px;
+        }
+        
+        .faq-question {
+            font-weight: 600;
+            margin-bottom: 8px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .faq-answer {
+            font-size: 14px;
+            color: var(--gray);
+            line-height: 1.6;
+        }
+        
+        .faq-icon {
+            transition: transform 0.3s;
+        }
+        
+        .faq-item.active .faq-icon {
+            transform: rotate(180deg);
+        }
+        
+        /* Styling untuk kalkulator yang berdampingan */
+        .calculator-columns {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .calculator-columns .column {
+            flex: 1;
+        }
+        
+        @media (max-width: 768px) {
+            .calculator-columns {
+                flex-direction: column;
+            }
+        }
+        
+        .calculator-columns .card {
+            margin-bottom: 0;
+            padding: 16px;
+        }
+        
+        .calculator-columns .card-header {
+            margin-bottom: 12px;
+            padding-bottom: 10px;
+        }
+        
+        .calculator-columns .action-buttons {
+            margin-top: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Day Trading Calculator</h1>
+            <p class="subtitle">Hitung transaksi dan saldo real-time selama jam perdagangan</p>
+        </header>
+        
+        <!-- Kalkulator Resiko Stop Loss dan Jumlah Lot Berdampingan -->
+        <div class="calculator-columns">
+            <!-- Kalkulator Resiko Stop Loss -->
+            <div class="column">
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Kalkulator Resiko Stop Loss</h2>
+                    </div>
+                    
+                    <div class="risk-calculator">
+                        <div class="risk-input-group">
+                            <label for="slPercent">Persentase Stop Loss (%)</label>
+                            <input type="number" id="slPercent" step="0.1" min="0.1" max="50" placeholder="6" value="6" oninput="calculateRisk()">
+                        </div>
+                        
+                        <div class="risk-input-group">
+                            <label for="riskAmount">Resiko yang Sanggup (Rp)</label>
+                            <input type="number" id="riskAmount" min="0" placeholder="300000" value="300000" oninput="calculateRisk()">
+                        </div>
+                        
+                        <div class="risk-result">
+                            <div class="summary-label">Total Entry yang Diizinkan</div>
+                            <div class="summary-value" id="totalEntry">Rp 5.000.000</div>
+                        </div>
+                        
+                        <div class="risk-note">
+                            <p>Rumus: Total Entry = Resiko / (Stop Loss % / 100)</p>
+                        </div>
+                    </div>
+                    
+                    <div class="action-buttons">
+                        <button class="btn btn-primary" onclick="calculateRisk()">
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M14 8C14 11.3137 11.3137 14 8 14C4.68629 14 2 11.3137 2 8C2 4.68629 4.68629 2 8 2C11.3137 2 14 4.68629 14 8Z" stroke="currentColor" stroke-width="2"/>
+                                <path d="M8 5V11M5 8H11" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                            </svg>
+                            Hitung Resiko
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Kalkulator Jumlah Lot -->
+            <div class="column">
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Kalkulator Jumlah Lot</h2>
+                    </div>
+                    
+                    <div class="lot-calculator">
+                        <div class="risk-input-group">
+                            <label for="stockPrice">Harga Saham (Rp)</label>
+                            <input type="number" id="stockPrice" min="0" placeholder="1000" value="1000" oninput="calculateLots()">
+                        </div>
+                        
+                        <div class="risk-input-group">
+                            <label for="maxLots">Maksimum Lot (opsional)</label>
+                            <input type="number" id="maxLots" min="0" placeholder="100" value="" oninput="calculateLots()">
+                        </div>
+                        
+                        <div class="lot-result">
+                            <div class="summary-label">Jumlah Lot yang Direkomendasikan</div>
+                            <div class="summary-value" id="recommendedLots">0 Lot</div>
+                        </div>
+                        
+                        <div class="risk-note">
+                            <p>Rumus: Jumlah Lot = Total Entry / (Harga Saham × 100)</p>
+                        </div>
+                    </div>
+                    
+                    <div class="action-buttons">
+                        <button class="btn btn-primary" onclick="addRecommendedBuy()">
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M8 1V15M1 8H15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                            </svg>
+                            Tambah ke Transaksi Beli
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="columns-container">
+            <!-- Kolom Kiri - Transaksi Beli -->
+            <div class="column buy-column">
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">
+                            <span>Transaksi Beli</span>
+                            <span class="badge" id="buyBadge">0</span>
+                        </h2>
+                    </div>
+                    
+                    <table class="transaction-table" id="beliTable">
+                        <thead>
+                            <tr>
+                                <th>Efek</th>
+                                <th>Harga</th>
+                                <th>Jumlah (Lot)</th>
+                                <th>Total</th>
+                                <th width="60">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Baris akan ditambahkan di sini -->
+                        </tbody>
+                    </table>
+                    
+                    <div class="card-footer">
+                        <button class="btn btn-primary" onclick="tambahBaris('beli')">
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M8 1V15M1 8H15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                            </svg>
+                            Tambah Beli
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Kolom Kanan - Transaksi Jual -->
+            <div class="column sell-column">
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">
+                            <span>Transaksi Jual</span>
+                            <span class="badge" id="sellBadge">0</span>
+                        </h2>
+                    </div>
+                    
+                    <table class="transaction-table" id="jualTable">
+                        <thead>
+                            <tr>
+                                <th>Efek</th>
+                                <th>Harga</th>
+                                <th>Jumlah (Lot)</th>
+                                <th>Total</th>
+                                <th width="60">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Baris akan ditambahkan di sini -->
+                        </tbody>
+                    </table>
+                    
+                    <div class="card-footer">
+                        <button class="btn btn-primary" onclick="tambahBaris('jual')">
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M8 1V15M1 8H15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                            </svg>
+                            Tambah Jual
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Ringkasan di bawah kedua kolom -->
+        <div class="card">
+            <h2 class="card-title" style="margin-bottom: 16px;">Ringkasan Transaksi</h2>
+            
+            <div class="summary-grid">
+                <div class="summary-item">
+                    <div class="summary-label">Total Beli</div>
+                    <div class="summary-value" id="totalBeli">Rp 0</div>
+                </div>
+                
+                <div class="summary-item">
+                    <div class="summary-label">Total Jual</div>
+                    <div class="summary-value" id="totalJual">Rp 0</div>
+                </div>
+                
+                <div class="summary-item">
+                    <div class="summary-label">Net Transaksi</div>
+                    <div class="summary-value" id="netTransaksi">Rp 0</div>
+                </div>
+                
+                <div class="summary-item">
+                    <div class="summary-label">Total Transaksi</div>
+                    <div class="summary-value" id="totalTraded">Rp 0</div>
+                </div>
+                
+                <div class="summary-item">
+                    <div class="summary-label">Komisi Broker</div>
+                    <div class="summary-value" id="biayaBroker">Rp 0</div>
+                </div>
+                
+                <div class="summary-item">
+                    <div class="summary-label">PPN (12%)</div>
+                    <div class="summary-value" id="biayaPPN">Rp 0</div>
+                </div>
+                
+                <div class="summary-item">
+                    <div class="summary-label">Levy (0.0433%)</div>
+                    <div class="summary-value" id="biayaLevy">Rp 0</div>
+                </div>
+                
+                <div class="summary-item">
+                    <div class="summary-label">PPh (0.1%)</div>
+                    <div class="summary-value" id="biayaPPh">Rp 0</div>
+                </div>
+                
+                <div class="summary-item">
+                    <div class="summary-label">Bea Materai</div>
+                    <div class="summary-value" id="biayaMaterai">Rp 0</div>
+                </div>
+                
+                <div class="summary-item">
+                    <div class="summary-label">Total Biaya</div>
+                    <div class="summary-value" id="totalBiaya">Rp 0</div>
+                </div>
+                
+                <div class="summary-item summary-total">
+                    <div class="summary-label">Perubahan Saldo</div>
+                    <div class="summary-value" id="totalTagihan">Rp 0</div>
+                </div>
+            </div>
+            
+            <div class="action-buttons">
+                <button class="btn btn-primary" onclick="resetAll()">
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M13.5 2.5L2.5 13.5M2.5 2.5L13.5 13.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                    Reset Semua
+                </button>
+                <button class="btn" style="background: #e5e7eb;" onclick="exportData()">
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M8 11L8 1M8 11L5 8M8 11L11 8M1 13H15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    Export Data
+                </button>
+            </div>
+        </div>
+        
+        <!-- Panduan Pengguna dan FAQ -->
+        <div class="help-section">
+            <div class="card">
+                <div class="help-tabs">
+                    <div class="help-tab active" onclick="openHelpTab(event, 'userManual')">Panduan Pengguna</div>
+                    <div class="help-tab" onclick="openHelpTab(event, 'faq')">FAQ</div>
+                    <div class="help-tab" onclick="openHelpTab(event, 'tips')">Tips Trading</div>
+                </div>
+                
+                <div id="userManual" class="help-content active">
+                    <div class="help-item">
+                        <h3>Cara Menggunakan Kalkulator Resiko Stop Loss</h3>
+                        <p>Kalkulator ini membantu Anda menentukan jumlah maksimum yang dapat Anda investasikan berdasarkan tingkat resiko yang Anda siap tanggung:</p>
+                        <ul>
+                            <li>Masukkan persentase stop loss yang Anda rencanakan (misalnya 6%)</li>
+                            <li>Masukkan jumlah kerugian maksimum yang sanggup Anda tanggung (misalnya Rp 300.000)</li>
+                            <li>Kalkulator akan menghitung total entry yang diizinkan</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="help-item">
+                        <h3>Cara Menggunakan Kalkulator Jumlah Lot</h3>
+                        <p>Setelah mendapatkan total entry yang diizinkan, gunakan kalkulator ini untuk menentukan jumlah lot yang dapat dibeli:</p>
+                        <ul>
+                            <li>Masukkan harga saham yang ingin dibeli</li>
+                            <li>Jika ada batasan jumlah lot, masukkan maksimum lot (opsional)</li>
+                            <li>Klik "Tambah ke Transaksi Beli" untuk menambahkan ke daftar transaksi</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="help-item">
+                        <h3>Mengelola Transaksi Beli dan Jual</h3>
+                        <p>Anda dapat menambahkan, mengedit, dan menghapus transaksi beli dan jual:</p>
+                        <ul>
+                            <li>Klik "Tambah Beli" atau "Tambah Jual" untuk menambah transaksi</li>
+                            <li>Isi informasi efek, harga, dan jumlah lot</li>
+                            <li>Total akan dihitung otomatis (harga × jumlah lot × 100)</li>
+                            <li>Gunakan tombol X untuk menghapus transaksi</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div id="faq" class="help-content">
+                    <div class="faq-item">
+                        <div class="faq-question" onclick="toggleFaq(this)">
+                            <span>Bagaimana cara kalkulator menghitung biaya transaksi?</span>
+                            <svg class="faq-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M4 6L8 10L12 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </div>
+                        <div class="faq-answer">
+                            <p>Kalkulator menghitung berbagai biaya transaksi sebagai berikut:</p>
+                            <ul>
+                                <li>Komisi broker: 0.1264% dari total nilai transaksi (beli + jual)</li>
+                                <li>PPN: 12% dari komisi broker</li>
+                                <li>Levy: 0.0433% dari total nilai transaksi</li>
+                                <li>PPh: 0.1% dari total nilai transaksi jual</li>
+                                <li>Bea materai: Rp 10.000 jika total transaksi melebihi Rp 10.000.000</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div class="faq-item">
+                        <div class="faq-question" onclick="toggleFaq(this)">
+                            <span>Apakah data transaksi tersimpan secara otomatis?</span>
+                            <svg class="faq-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M4 6L8 10L12 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </div>
+                        <div class="faq-answer">
+                            <p>Ya, semua data transaksi disimpan secara otomatis di browser Anda menggunakan localStorage. Data akan tetap tersimpan meskipun Anda menutup browser, kecuali jika Anda menghapus data browser.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="faq-item">
+                        <div class="faq-question" onclick="toggleFaq(this)">
+                            <span>Bagaimana cara menggunakan fitur Export Data?</span>
+                            <svg class="faq-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M4 6L8 10L12 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </div>
+                        <div class="faq-answer">
+                            <p>Saat ini fitur Export Data masih dalam pengembangan. Dalam versi mendatang, Anda akan dapat mengekspor data transaksi ke format CSV atau PDF untuk analisis lebih lanjut.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="tips" class="help-content">
+                    <div class="help-item">
+                        <h3>Tips Manajemen Resiko</h3>
+                        <ul>
+                            <li>Selalu gunakan stop loss untuk membatasi kerugian</li>
+                            <li>Jangan mengambil resiko lebih dari 2% dari modal Anda dalam satu transaksi</li>
+                            <li>Diversifikasi portofolio untuk mengurangi resiko</li>
+                            <li>Gunakan kalkulator ini untuk merencanakan setiap transaksi</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="help-item">
+                        <h3>Tips Trading Harian</h3>
+                        <ul>
+                            <li>Fokus pada saham dengan likuiditas tinggi</li>
+                            <li>Gunakan analisis teknikal untuk menentukan titik masuk dan keluar</li>
+                            <li>Patuhi rencana trading yang sudah dibuat</li>
+                            <li>Jangan terpancing emosi saat pasar bergejolak</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p>Day Trading Calculator - Ajaib © 2023</p>
+        </div>
+    </div>
+
+    <script>
+        const lotSize = 100;
+        const brokerRate = 0.001264; // 0.1264% dari total beli + jual
+        const ppnRate = 0.12; // 12%
+        const levyRate = 0.000433; // 0.0433%
+        const pphRate = 0.001; // 0.1% dari jual
+        const materaiThreshold = 10000000;
+        const materaiFee = 10000;
+
+        // Inisialisasi data dari localStorage jika ada
+        let buyTransactions = JSON.parse(localStorage.getItem('buyTransactions')) || [];
+        let sellTransactions = JSON.parse(localStorage.getItem('sellTransactions')) || [];
+
+        // Muat data saat halaman dimuat
+        document.addEventListener('DOMContentLoaded', function() {
+            renderTransactions();
+            updateTotals();
+            calculateRisk(); // Hitung resiko awal
+            calculateLots(); // Hitung lot awal
+        });
+
+        // Fungsi untuk kalkulator resiko
+        function calculateRisk() {
+            const slPercent = parseFloat(document.getElementById('slPercent').value) || 0;
+            const riskAmount = parseFloat(document.getElementById('riskAmount').value) || 0;
+            
+            if (slPercent > 0 && riskAmount > 0) {
+                const totalEntry = riskAmount / (slPercent / 100);
+                document.getElementById('totalEntry').textContent = formatCurrency(totalEntry);
+                
+                // Hitung ulang lot jika harga sudah diisi
+                calculateLots();
+            } else {
+                document.getElementById('totalEntry').textContent = 'Rp 0';
+            }
+        }
+
+        // Fungsi untuk kalkulator jumlah lot
+        function calculateLots() {
+            const stockPrice = parseFloat(document.getElementById('stockPrice').value) || 0;
+            const maxLots = parseInt(document.getElementById('maxLots').value) || 0;
+            
+            // Ambil total entry dari kalkulator resiko
+            const totalEntryText = document.getElementById('totalEntry').textContent;
+            const totalEntry = parseFloat(totalEntryText.replace(/[^\d]/g, '')) || 0;
+            
+            if (stockPrice > 0 && totalEntry > 0) {
+                // Hitung jumlah lot yang direkomendasikan
+                let recommendedLots = Math.floor(totalEntry / (stockPrice * 100));
+                
+                // Batasi dengan maksimum lot jika diisi
+                if (maxLots > 0 && recommendedLots > maxLots) {
+                    recommendedLots = maxLots;
+                }
+                
+                document.getElementById('recommendedLots').textContent = recommendedLots + ' Lot';
+            } else {
+                document.getElementById('recommendedLots').textContent = '0 Lot';
+            }
+        }
+
+        // Fungsi untuk menambahkan transaksi beli dengan jumlah lot yang direkomendasikan
+        function addRecommendedBuy() {
+            const stockPrice = parseFloat(document.getElementById('stockPrice').value) || 0;
+            const recommendedLotsText = document.getElementById('recommendedLots').textContent;
+            const recommendedLots = parseInt(recommendedLotsText) || 0;
+            
+            if (stockPrice > 0 && recommendedLots > 0) {
+                // Tambahkan transaksi beli
+                buyTransactions.push({ 
+                    efek: '', 
+                    harga: stockPrice, 
+                    jumlah: recommendedLots, 
+                    total: stockPrice * recommendedLots * lotSize 
+                });
+                
+                renderTransactions();
+                updateTotals();
+                saveData();
+                
+                // Tampilkan notifikasi
+                alert(`Transaksi beli ${recommendedLots} lot dengan harga ${formatCurrency(stockPrice)} berhasil ditambahkan`);
+            } else {
+                alert('Harap isi harga saham terlebih dahulu');
+            }
+        }
+
+        function tambahBaris(tipe) {
+            if (tipe === 'beli') {
+                buyTransactions.push({ efek: '', harga: 0, jumlah: 0, total: 0 });
+            } else {
+                sellTransactions.push({ efek: '', harga: 0, jumlah: 0, total: 0 });
+            }
+            renderTransactions();
+            updateTotals();
+            saveData();
+        }
+
+        function hapusBaris(tipe, index) {
+            if (tipe === 'beli') {
+                buyTransactions.splice(index, 1);
+            } else {
+                sellTransactions.splice(index, 1);
+            }
+            renderTransactions();
+            updateTotals();
+            saveData();
+        }
+
+        function updateRow(tipe, index, field, value) {
+            if (tipe === 'beli') {
+                buyTransactions[index][field] = value;
+                if (field === 'harga' || field === 'jumlah') {
+                    const harga = parseFloat(buyTransactions[index].harga) || 0;
+                    const jumlah = parseFloat(buyTransactions[index].jumlah) || 0;
+                    buyTransactions[index].total = harga * jumlah * lotSize;
+                }
+            } else {
+                sellTransactions[index][field] = value;
+                if (field === 'harga' || field === 'jumlah') {
+                    const harga = parseFloat(sellTransactions[index].harga) || 0;
+                    const jumlah = parseFloat(sellTransactions[index].jumlah) || 0;
+                    sellTransactions[index].total = harga * jumlah * lotSize;
+                }
+            }
+            updateTotals();
+            saveData();
+        }
+
+        function renderTransactions() {
+            // Render beli
+            const beliTbody = document.querySelector('#beliTable tbody');
+            beliTbody.innerHTML = '';
+            
+            buyTransactions.forEach((transaction, index) => {
+                const row = beliTbody.insertRow();
+                
+                const efekCell = row.insertCell(0);
+                const efekInput = document.createElement('input');
+                efekInput.type = 'text';
+                efekInput.placeholder = 'BBYB';
+                efekInput.value = transaction.efek;
+                efekInput.oninput = (e) => updateRow('beli', index, 'efek', e.target.value);
+                efekCell.appendChild(efekInput);
+                
+                const hargaCell = row.insertCell(1);
+                const hargaInput = document.createElement('input');
+                hargaInput.type = 'number';
+                hargaInput.min = '0';
+                hargaInput.placeholder = '418';
+                hargaInput.value = transaction.harga;
+                hargaInput.oninput = (e) => updateRow('beli', index, 'harga', e.target.value);
+                hargaCell.appendChild(hargaInput);
+                
+                const jumlahCell = row.insertCell(2);
+                const jumlahInput = document.createElement('input');
+                jumlahInput.type = 'number';
+                jumlahInput.min = '0';
+                jumlahInput.placeholder = '10';
+                jumlahInput.value = transaction.jumlah;
+                jumlahInput.oninput = (e) => updateRow('beli', index, 'jumlah', e.target.value);
+                jumlahCell.appendChild(jumlahInput);
+                
+                const totalCell = row.insertCell(3);
+                totalCell.className = 'total-cell';
+                totalCell.textContent = formatCurrency(transaction.total);
+                
+                const aksiCell = row.insertCell(4);
+                const hapusBtn = document.createElement('button');
+                hapusBtn.className = 'btn btn-danger';
+                hapusBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M13.5 2.5L2.5 13.5M2.5 2.5L13.5 13.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
+                hapusBtn.onclick = () => hapusBaris('beli', index);
+                aksiCell.appendChild(hapusBtn);
+            });
+            
+            // Render jual
+            const jualTbody = document.querySelector('#jualTable tbody');
+            jualTbody.innerHTML = '';
+            
+            sellTransactions.forEach((transaction, index) => {
+                const row = jualTbody.insertRow();
+                
+                const efekCell = row.insertCell(0);
+                const efekInput = document.createElement('input');
+                efekInput.type = 'text';
+                efekInput.placeholder = 'BBYB';
+                efekInput.value = transaction.efek;
+                efekInput.oninput = (e) => updateRow('jual', index, 'efek', e.target.value);
+                efekCell.appendChild(efekInput);
+                
+                const hargaCell = row.insertCell(1);
+                const hargaInput = document.createElement('input');
+                hargaInput.type = 'number';
+                hargaInput.min = '0';
+                hargaInput.placeholder = '420';
+                hargaInput.value = transaction.harga;
+                hargaInput.oninput = (e) => updateRow('jual', index, 'harga', e.target.value);
+                hargaCell.appendChild(hargaInput);
+                
+                const jumlahCell = row.insertCell(2);
+                const jumlahInput = document.createElement('input');
+                jumlahInput.type = 'number';
+                jumlahInput.min = '0';
+                jumlahInput.placeholder = '10';
+                jumlahInput.value = transaction.jumlah;
+                jumlahInput.oninput = (e) => updateRow('jual', index, 'jumlah', e.target.value);
+                jumlahCell.appendChild(jumlahInput);
+                
+                const totalCell = row.insertCell(3);
+                totalCell.className = 'total-cell';
+                totalCell.textContent = formatCurrency(transaction.total);
+                
+                const aksiCell = row.insertCell(4);
+                const hapusBtn = document.createElement('button');
+                hapusBtn.className = 'btn btn-danger';
+                hapusBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M13.5 2.5L2.5 13.5M2.5 2.5L13.5 13.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
+                hapusBtn.onclick = () => hapusBaris('jual', index);
+                aksiCell.appendChild(hapusBtn);
+            });
+            
+            // Update badge
+            document.getElementById('buyBadge').textContent = buyTransactions.length;
+            document.getElementById('sellBadge').textContent = sellTransactions.length;
+        }
+
+        function updateTotals() {
+            let totalBeli = buyTransactions.reduce((sum, t) => sum + t.total, 0);
+            let totalJual = sellTransactions.reduce((sum, t) => sum + t.total, 0);
+            
+            const totalTraded = totalBeli + totalJual;
+            const netTransaksi = totalJual - totalBeli;
+            
+            const biayaBroker = brokerRate * totalTraded;
+            const biayaPPN = ppnRate * biayaBroker;
+            const biayaLevy = levyRate * totalTraded;
+            const biayaPPh = pphRate * totalJual;
+            const biayaMaterai = (totalTraded > materaiThreshold) ? materaiFee : 0;
+            
+            const totalBiaya = biayaBroker + biayaPPN + biayaLevy + biayaPPh + biayaMaterai;
+            const totalTagihan = netTransaksi - totalBiaya;
+            
+            // Update UI
+            document.getElementById('totalBeli').textContent = formatCurrency(totalBeli);
+            document.getElementById('totalJual').textContent = formatCurrency(totalJual);
+            document.getElementById('totalTraded').textContent = formatCurrency(totalTraded);
+            
+            const netElement = document.getElementById('netTransaksi');
+            netElement.textContent = formatCurrency(netTransaksi);
+            netElement.className = 'summary-value ' + (netTransaksi >= 0 ? 'positive' : 'negative');
+            
+            document.getElementById('biayaBroker').textContent = formatCurrency(Math.round(biayaBroker));
+            document.getElementById('biayaPPN').textContent = formatCurrency(Math.round(biayaPPN));
+            document.getElementById('biayaLevy').textContent = formatCurrency(Math.round(biayaLevy));
+            document.getElementById('biayaPPh').textContent = formatCurrency(Math.round(biayaPPh));
+            document.getElementById('biayaMaterai').textContent = formatCurrency(biayaMaterai);
+            document.getElementById('totalBiaya').textContent = formatCurrency(Math.round(totalBiaya));
+            
+            const tagihanElement = document.getElementById('totalTagihan');
+            tagihanElement.textContent = formatCurrency(Math.round(totalTagihan));
+            tagihanElement.className = 'summary-value ' + (totalTagihan >= 0 ? 'positive' : 'negative');
+        }
+
+        function formatCurrency(amount) {
+            return 'Rp ' + Math.round(amount).toLocaleString('id-ID');
+        }
+
+        function resetAll() {
+            if (confirm('Apakah Anda yakin ingin menghapus semua data transaksi?')) {
+                buyTransactions = [];
+                sellTransactions = [];
+                renderTransactions();
+                updateTotals();
+                saveData();
+            }
+        }
+
+        function exportData() {
+            // Dalam implementasi nyata, ini bisa mengekspor data ke CSV atau PDF
+            alert('Fitur ekspor data akan segera hadir!');
+        }
+
+        function saveData() {
+            localStorage.setItem('buyTransactions', JSON.stringify(buyTransactions));
+            localStorage.setItem('sellTransactions', JSON.stringify(sellTransactions));
+        }
+        
+        // Fungsi untuk tab panduan pengguna
+        function openHelpTab(evt, tabName) {
+            // Sembunyikan semua konten tab
+            const tabContents = document.getElementsByClassName('help-content');
+            for (let i = 0; i < tabContents.length; i++) {
+                tabContents[i].classList.remove('active');
+            }
+            
+            // Hapus kelas aktif dari semua tab
+            const tabLinks = document.getElementsByClassName('help-tab');
+            for (let i = 0; i < tabLinks.length; i++) {
+                tabLinks[i].classList.remove('active');
+            }
+            
+            // Tampilkan tab yang dipilih
+            document.getElementById(tabName).classList.add('active');
+            evt.currentTarget.classList.add('active');
+        }
+        
+        // Fungsi untuk toggle FAQ
+        function toggleFaq(element) {
+            const faqItem = element.parentElement;
+            faqItem.classList.toggle('active');
+        }
+    </script>
+</body>
+</html>

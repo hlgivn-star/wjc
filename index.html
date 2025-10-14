@@ -1,0 +1,767 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trading Tools Suite - Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --primary-light: #3b82f6;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --dark: #1f2937;
+            --darker: #0f172a;
+            --light: #f8fafc;
+            --gray: #6b7280;
+            --border: #e5e7eb;
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --glass-bg: rgba(15, 23, 42, 0.8);
+            --neon-glow: 0 0 10px rgba(37, 99, 235, 0.7);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, var(--darker), var(--dark));
+            color: var(--light);
+            line-height: 1.6;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        
+        .dashboard-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        /* Header Styles */
+        .dashboard-header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 30px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            border: 1px solid rgba(99, 102, 241, 0.3);
+            box-shadow: var(--neon-glow);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .dashboard-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 200px;
+            height: 200px;
+            background: radial-gradient(circle, rgba(99, 102, 241, 0.2) 0%, transparent 70%);
+        }
+        
+        .dashboard-title {
+            font-size: 3rem;
+            font-weight: 800;
+            margin-bottom: 10px;
+            background: linear-gradient(90deg, #60a5fa, var(--primary-light));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        .dashboard-subtitle {
+            font-size: 1.2rem;
+            color: #cbd5e1;
+            margin-bottom: 20px;
+            font-weight: 400;
+        }
+        
+        .stats-bar {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 30px;
+        }
+        
+        .stat-item {
+            background: rgba(30, 41, 59, 0.6);
+            padding: 15px;
+            border-radius: 12px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .stat-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--primary-light);
+            margin-bottom: 5px;
+        }
+        
+        .stat-label {
+            font-size: 0.9rem;
+            color: #94a3b8;
+        }
+        
+        /* Apps Grid */
+        .apps-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+        
+        .app-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            border: 1px solid rgba(99, 102, 241, 0.3);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .app-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary), var(--primary-light));
+        }
+        
+        .app-card:hover {
+            transform: translateY(-10px);
+            box-shadow: var(--neon-glow);
+            border-color: var(--primary);
+        }
+        
+        .app-icon {
+            font-size: 3rem;
+            margin-bottom: 20px;
+            display: inline-block;
+            padding: 15px;
+            border-radius: 15px;
+            background: rgba(99, 102, 241, 0.1);
+        }
+        
+        .app-card.wishlist .app-icon { color: #10b981; background: rgba(16, 185, 129, 0.1); }
+        .app-card.calculator .app-icon { color: #f59e0b; background: rgba(245, 158, 11, 0.1); }
+        .app-card.journal .app-icon { color: #ef4444; background: rgba(239, 68, 68, 0.1); }
+        
+        .app-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            color: var(--light);
+        }
+        
+        .app-description {
+            color: #94a3b8;
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+        
+        .app-features {
+            list-style: none;
+            margin-bottom: 25px;
+        }
+        
+        .app-features li {
+            padding: 5px 0;
+            color: #cbd5e1;
+            display: flex;
+            align-items: center;
+        }
+        
+        .app-features li::before {
+            content: '✓';
+            color: var(--success);
+            font-weight: bold;
+            margin-right: 10px;
+        }
+        
+        .app-button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            padding: 12px 24px;
+            border-radius: 10px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+            width: 100%;
+        }
+        
+        .app-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(37, 99, 235, 0.4);
+        }
+        
+        /* Quick Actions */
+        .quick-actions {
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 40px;
+            border: 1px solid rgba(99, 102, 241, 0.3);
+        }
+        
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            color: var(--light);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .actions-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+        
+        .action-btn {
+            background: rgba(30, 41, 59, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 12px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: var(--light);
+        }
+        
+        .action-btn:hover {
+            background: rgba(99, 102, 241, 0.2);
+            border-color: var(--primary);
+            transform: translateY(-3px);
+        }
+        
+        .action-icon {
+            font-size: 1.5rem;
+            margin-bottom: 8px;
+            display: block;
+        }
+        
+        /* Footer */
+        .dashboard-footer {
+            text-align: center;
+            padding: 20px;
+            color: #64748b;
+            font-size: 0.9rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            margin-top: 40px;
+        }
+        
+        /* App Container (hidden by default) */
+        .app-container {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--darker);
+            z-index: 1000;
+            overflow: auto;
+        }
+        
+        .app-header {
+            background: var(--glass-bg);
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .back-button {
+            background: rgba(30, 41, 59, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--light);
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+        }
+        
+        .back-button:hover {
+            background: rgba(99, 102, 241, 0.2);
+            border-color: var(--primary);
+        }
+        
+        .app-content {
+            padding: 20px;
+            height: calc(100vh - 60px);
+        }
+        
+        .app-iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            border-radius: 8px;
+            background: white;
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .dashboard-title {
+                font-size: 2rem;
+            }
+            
+            .apps-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .stats-bar {
+                grid-template-columns: 1fr 1fr;
+            }
+            
+            .actions-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .dashboard-container {
+                padding: 10px;
+            }
+            
+            .dashboard-header {
+                padding: 20px;
+            }
+            
+            .app-card {
+                padding: 20px;
+            }
+            
+            .stats-bar,
+            .actions-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        /* Animation */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .app-card {
+            animation: fadeIn 0.6s ease forwards;
+        }
+        
+        .app-card:nth-child(1) { animation-delay: 0.1s; }
+        .app-card:nth-child(2) { animation-delay: 0.2s; }
+        .app-card:nth-child(3) { animation-delay: 0.3s; }
+        
+        /* Notification */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            border-radius: 10px;
+            color: white;
+            font-weight: 500;
+            z-index: 1001;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            transform: translateX(150%);
+            transition: transform 0.3s ease;
+        }
+        
+        .notification.show {
+            transform: translateX(0);
+        }
+        
+        .notification.success {
+            background: linear-gradient(135deg, var(--success), #0da271);
+        }
+        
+        .notification.info {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+        }
+    </style>
+</head>
+<body>
+    <!-- Dashboard Main Content -->
+    <div class="dashboard-container" id="dashboard">
+        <header class="dashboard-header">
+            <h1 class="dashboard-title">Trading Tools Suite</h1>
+            <p class="dashboard-subtitle">Kumpulan alat trading profesional untuk analisis, manajemen risiko, dan pencatatan trading</p>
+            
+            <div class="stats-bar">
+                <div class="stat-item">
+                    <div class="stat-value" id="totalTrades">0</div>
+                    <div class="stat-label">Total Trading</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="wishlistStocks">0</div>
+                    <div class="stat-label">Saham Wishlist</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="winRate">0%</div>
+                    <div class="stat-label">Win Rate</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="activeStrategies">0</div>
+                    <div class="stat-label">Strategi Aktif</div>
+                </div>
+            </div>
+        </header>
+        
+        <div class="apps-grid">
+            <!-- Wishlist App Card -->
+            <div class="app-card wishlist" data-app="wishlist">
+                <div class="app-icon">
+                    <i class='bx bx-star'></i>
+                </div>
+                <h2 class="app-title">Stock Wishlist</h2>
+                <p class="app-description">Kelola dan pantau saham incaran berdasarkan strategi trading dengan sistem multi-kolom</p>
+                <ul class="app-features">
+                    <li>Multi-column organization</li>
+                    <li>Strategy-based filtering</li>
+                    <li>Priority management</li>
+                    <li>TradingView integration</li>
+                </ul>
+                <button class="app-button" onclick="openApp('wishlist')">
+                    <i class='bx bx-rocket'></i>
+                    Buka Stock Wishlist
+                </button>
+            </div>
+            
+            <!-- Calculator App Card -->
+            <div class="app-card calculator" data-app="calculator">
+                <div class="app-icon">
+                    <i class='bx bx-calculator'></i>
+                </div>
+                <h2 class="app-title">Trading Calculator</h2>
+                <p class="app-description">Hitung transaksi, risiko, dan biaya trading secara real-time dengan kalkulator canggih</p>
+                <ul class="app-features">
+                    <li>Real-time calculation</li>
+                    <li>Risk management tools</li>
+                    <li>Commission & tax breakdown</li>
+                    <li>Position sizing calculator</li>
+                </ul>
+                <button class="app-button" onclick="openApp('calculator')">
+                    <i class='bx bx-calculator'></i>
+                    Buka Trading Calculator
+                </button>
+            </div>
+            
+            <!-- Journal App Card -->
+            <div class="app-card journal" data-app="journal">
+                <div class="app-icon">
+                    <i class='bx bx-book'></i>
+                </div>
+                <h2 class="app-title">Trading Journal</h2>
+                <p class="app-description">Analisis performa trading dengan journal modern dan statistik mendetail</p>
+                <ul class="app-features">
+                    <li>Performance analytics</li>
+                    <li>Strategy analysis</li>
+                    <li>Emotion tracking</li>
+                    <li>Win rate statistics</li>
+                </ul>
+                <button class="app-button" onclick="openApp('journal')">
+                    <i class='bx bx-book'></i>
+                    Buka Trading Journal
+                </button>
+            </div>
+        </div>
+        
+        <!-- Quick Actions Section -->
+        <section class="quick-actions">
+            <h2 class="section-title">
+                <i class='bx bx-zap'></i>
+                Quick Actions
+            </h2>
+            <div class="actions-grid">
+                <div class="action-btn" onclick="openApp('wishlist')">
+                    <i class='bx bx-plus action-icon'></i>
+                    Tambah Saham Baru
+                </div>
+                <div class="action-btn" onclick="openApp('calculator')">
+                    <i class='bx bx-calculator action-icon'></i>
+                    Hitung Risiko Trading
+                </div>
+                <div class="action-btn" onclick="openApp('journal')">
+                    <i class='bx bx-book action-icon'></i>
+                    Catat Trading Hari Ini
+                </div>
+                <div class="action-btn" onclick="exportAllData()">
+                    <i class='bx bx-download action-icon'></i>
+                    Backup Semua Data
+                </div>
+            </div>
+        </section>
+        
+        <footer class="dashboard-footer">
+            <p>Trading Tools Suite &copy; 2024 - Professional Trading Tools for Indonesian Traders</p>
+        </footer>
+    </div>
+    
+    <!-- App Container (hidden by default) -->
+    <div class="app-container" id="appContainer">
+        <div class="app-header">
+            <button class="back-button" onclick="closeApp()">
+                <i class='bx bx-arrow-back'></i>
+                Kembali ke Dashboard
+            </button>
+            <div id="appTitle">Application</div>
+        </div>
+        <div class="app-content">
+            <iframe class="app-iframe" id="appFrame" src="about:blank"></iframe>
+        </div>
+    </div>
+    
+    <!-- Notification Element -->
+    <div class="notification" id="notification"></div>
+
+    <script>
+        // Application configuration
+        const APPS = {
+            wishlist: {
+                title: 'Stock Wishlist',
+                file: 'wishlist.html',
+                description: 'Kelola saham incaran berdasarkan strategi trading'
+            },
+            calculator: {
+                title: 'Trading Calculator', 
+                file: 'calc.html',
+                description: 'Hitung transaksi dan risiko trading secara real-time'
+            },
+            journal: {
+                title: 'Trading Journal',
+                file: 'jurnal.html', 
+                description: 'Analisis performa trading dengan statistik mendetail'
+            }
+        };
+
+        // Global state
+        let currentApp = null;
+
+        // DOM Elements
+        const dashboard = document.getElementById('dashboard');
+        const appContainer = document.getElementById('appContainer');
+        const appFrame = document.getElementById('appFrame');
+        const appTitle = document.getElementById('appTitle');
+        const notification = document.getElementById('notification');
+
+        // Statistics elements
+        const totalTradesEl = document.getElementById('totalTrades');
+        const wishlistStocksEl = document.getElementById('wishlistStocks');
+        const winRateEl = document.getElementById('winRate');
+        const activeStrategiesEl = document.getElementById('activeStrategies');
+
+        // Initialize dashboard
+        function initDashboard() {
+            updateStatistics();
+            loadUserPreferences();
+            
+            // Add click events to app cards
+            document.querySelectorAll('.app-card').forEach(card => {
+                card.addEventListener('click', function(e) {
+                    if (!e.target.closest('.app-button')) {
+                        openApp(this.dataset.app);
+                    }
+                });
+            });
+        }
+
+        // Update dashboard statistics
+        function updateStatistics() {
+            try {
+                // Load data from localStorage for each app
+                const wishlistData = JSON.parse(localStorage.getItem('wishlistSaham') || '[]');
+                const journalData = JSON.parse(localStorage.getItem('tradingJournal') || '[]');
+                const calculatorData = JSON.parse(localStorage.getItem('buyTransactions') || '[]');
+                
+                // Update statistics
+                wishlistStocksEl.textContent = wishlistData.length;
+                totalTradesEl.textContent = journalData.length;
+                
+                // Calculate win rate from journal
+                if (journalData.length > 0) {
+                    const winningTrades = journalData.filter(trade => {
+                        const profitLoss = (trade.exitPrice - trade.entryPrice) * trade.lotSize * 100;
+                        return profitLoss > 0;
+                    }).length;
+                    const winRate = Math.round((winningTrades / journalData.length) * 100);
+                    winRateEl.textContent = `${winRate}%`;
+                } else {
+                    winRateEl.textContent = '0%';
+                }
+                
+                // Count active strategies from wishlist
+                const activeStrategies = new Set(wishlistData.map(item => item.strategi)).size;
+                activeStrategiesEl.textContent = activeStrategies;
+                
+            } catch (error) {
+                console.error('Error updating statistics:', error);
+            }
+        }
+
+        // Open application
+        function openApp(appName) {
+            if (!APPS[appName]) {
+                showNotification(`Aplikasi ${appName} tidak ditemukan`, 'error');
+                return;
+            }
+
+            currentApp = appName;
+            const app = APPS[appName];
+            
+            // Update UI
+            appTitle.textContent = app.title;
+            appFrame.src = app.file;
+            dashboard.style.display = 'none';
+            appContainer.style.display = 'block';
+            
+            // Save last opened app
+            localStorage.setItem('lastOpenedApp', appName);
+            
+            showNotification(`Membuka ${app.title}`, 'success');
+        }
+
+        // Close current application
+        function closeApp() {
+            appFrame.src = 'about:blank';
+            appContainer.style.display = 'none';
+            dashboard.style.display = 'block';
+            
+            // Update statistics when returning to dashboard
+            updateStatistics();
+            
+            showNotification('Kembali ke Dashboard', 'info');
+        }
+
+        // Export all data
+        function exportAllData() {
+            try {
+                const exportData = {
+                    wishlist: JSON.parse(localStorage.getItem('wishlistSaham') || '[]'),
+                    journal: JSON.parse(localStorage.getItem('tradingJournal') || '[]'),
+                    calculator: {
+                        buyTransactions: JSON.parse(localStorage.getItem('buyTransactions') || '[]'),
+                        sellTransactions: JSON.parse(localStorage.getItem('sellTransactions') || '[]')
+                    },
+                    exportDate: new Date().toISOString(),
+                    version: '1.0'
+                };
+                
+                const dataStr = JSON.stringify(exportData, null, 2);
+                const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);
+                
+                const linkElement = document.createElement('a');
+                linkElement.setAttribute('href', dataUri);
+                linkElement.setAttribute('download', `trading-tools-backup-${new Date().toISOString().split('T')[0]}.json`);
+                linkElement.click();
+                
+                showNotification('Backup semua data berhasil!', 'success');
+            } catch (error) {
+                console.error('Export error:', error);
+                showNotification('Error saat backup data', 'error');
+            }
+        }
+
+        // Import data (for future implementation)
+        function importData(file) {
+            // Implementation for importing data from file
+            console.log('Import data functionality would be implemented here');
+        }
+
+        // Show notification
+        function showNotification(message, type = 'info') {
+            notification.textContent = message;
+            notification.className = `notification ${type} show`;
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+
+        // Load user preferences
+        function loadUserPreferences() {
+            const lastApp = localStorage.getItem('lastOpenedApp');
+            if (lastApp && APPS[lastApp]) {
+                // Optional: Auto-open last used app
+                // openApp(lastApp);
+            }
+        }
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', function(e) {
+            // Escape key to close app
+            if (e.key === 'Escape' && appContainer.style.display !== 'none') {
+                closeApp();
+            }
+            
+            // Number keys to open apps
+            if (e.altKey) {
+                switch(e.key) {
+                    case '1':
+                        e.preventDefault();
+                        openApp('wishlist');
+                        break;
+                    case '2':
+                        e.preventDefault();
+                        openApp('calculator');
+                        break;
+                    case '3':
+                        e.preventDefault();
+                        openApp('journal');
+                        break;
+                    case 'd':
+                        e.preventDefault();
+                        closeApp();
+                        break;
+                }
+            }
+        });
+
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            initDashboard();
+            
+            // Show welcome message
+            setTimeout(() => {
+                showNotification('Selamat datang di Trading Tools Suite!', 'success');
+            }, 1000);
+        });
+
+        // Handle beforeunload to warn about unsaved changes
+        window.addEventListener('beforeunload', function(e) {
+            if (appContainer.style.display !== 'none') {
+                e.preventDefault();
+                e.returnValue = 'Anda memiliki aplikasi yang terbuka. Yakin ingin meninggalkan halaman?';
+            }
+        });
+    </script>
+</body>
+</html>

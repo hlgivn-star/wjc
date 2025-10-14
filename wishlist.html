@@ -1,0 +1,1648 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stock Wishlist - Multi Column</title>
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --primary-dark: #1d4ed8;
+            --secondary-color: #64748b;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --danger-color: #ef4444;
+            --light-color: #f8fafc;
+            --input-bg: #f0f9ff;
+            --filter-bg: #fef7cd;
+            --border-color: #e2e8f0;
+            --border-radius: 4px;
+            --newest-color: #dbeafe;
+            --recent-color: #f0f9ff;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+        }
+        
+        body {
+            background-color: #f1f5f9;
+            color: #334155;
+            line-height: 1.3;
+            padding: 8px;
+            font-size: 0.8rem;
+        }
+        
+        .container {
+            max-width: 100%;
+            margin: 0 auto;
+            background-color: white;
+            border-radius: var(--border-radius);
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+            padding: 12px;
+            overflow-x: auto;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 12px;
+            padding: 12px;
+            border-radius: var(--border-radius);
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+            color: white;
+        }
+        
+        h1 {
+            font-weight: 700;
+            margin-bottom: 2px;
+            font-size: 1.3rem;
+        }
+        
+        .subtitle {
+            opacity: 0.9;
+            font-size: 0.75rem;
+        }
+        
+        /* Quick Input Section */
+        .quick-input-section {
+            background-color: var(--input-bg);
+            border-radius: var(--border-radius);
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid var(--border-color);
+        }
+        
+        .input-row {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 8px;
+            align-items: end;
+            margin-bottom: 8px;
+        }
+        
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+        
+        .input-group label {
+            font-size: 0.75rem;
+            color: var(--secondary-color);
+            font-weight: 500;
+        }
+        
+        .input-group input {
+            padding: 5px 6px;
+            border: 1px solid var(--border-color);
+            border-radius: 3px;
+            font-size: 0.8rem;
+            background-color: white;
+            height: 30px;
+        }
+        
+        .add-btn {
+            background-color: var(--success-color);
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 0.8rem;
+            height: 30px;
+            white-space: nowrap;
+        }
+        
+        /* Quick Selection Buttons */
+        .quick-selection {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+        
+        .selection-group {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        
+        .selection-label {
+            font-size: 0.75rem;
+            color: var(--secondary-color);
+            font-weight: 500;
+        }
+        
+        .button-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 4px;
+        }
+        
+.strategy-btn, .timeframe-btn {
+    padding: 4px 6px;
+    border: 1px solid var(--border-color);
+    border-radius: 3px;
+    background: #e2e8f0; /* Warna latar default yang lebih gelap */
+    cursor: pointer;
+    font-size: 0.7rem;
+    text-align: center;
+    transition: all 0.2s;
+    color: #334155; /* Warna teks yang lebih kontras */
+    font-weight: 500;
+}
+
+.strategy-btn:hover, .timeframe-btn:hover {
+    background-color: #cbd5e1; /* Warna hover sedikit lebih gelap */
+}
+
+.strategy-btn.active, .timeframe-btn.active {
+    background-color: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+    font-weight: 600;
+}
+        
+        /* Filter Section */
+        .filter-section {
+            background-color: var(--filter-bg);
+            border-radius: var(--border-radius);
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid var(--border-color);
+        }
+        
+        .filter-row {
+            display: grid;
+            grid-template-columns: 1fr auto auto;
+            gap: 6px;
+            align-items: end;
+        }
+        
+        .search-box {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+        
+        .search-box input {
+            padding: 5px 6px;
+            border: 1px solid var(--border-color);
+            border-radius: 3px;
+            font-size: 0.8rem;
+            height: 30px;
+        }
+        
+        .quick-filters {
+            display: flex;
+            gap: 3px;
+        }
+        
+        .filter-btn {
+            color: white;
+            border: none;
+            padding: 5px 8px;
+            border-radius: 3px;
+            font-size: 0.75rem;
+            white-space: nowrap;
+            cursor: pointer;
+            height: 30px;
+        }
+        
+        .filter-btn[data-priority="high"] {
+            background-color: var(--danger-color);
+        }
+        
+        .filter-btn[data-priority="medium"] {
+            background-color: var(--warning-color);
+        }
+        
+        .filter-btn[data-priority="low"] {
+            background-color: var(--success-color);
+        }
+        
+        .clear-btn {
+            background-color: #94a3b8;
+            color: white;
+            border: none;
+            padding: 5px 8px;
+            border-radius: 3px;
+            font-size: 0.75rem;
+            cursor: pointer;
+            white-space: nowrap;
+            height: 30px;
+        }
+        
+        /* Multi Column Layout - 6 Columns */
+        .multi-column-layout {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 4px;
+            margin-bottom: 12px;
+        }
+        
+        .column {
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            background-color: white;
+            overflow: hidden;
+        }
+        
+        .column-header {
+            background-color: #f8fafc;
+            padding: 6px 8px;
+            font-weight: 600;
+            color: var(--primary-color);
+            border-bottom: 1px solid var(--border-color);
+            text-align: center;
+            font-size: 0.75rem;
+        }
+        
+        .column-content {
+            max-height: 500px;
+            overflow-y: auto;
+        }
+        
+        /* Compact Table with Strategy column */
+        .compact-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.75rem;
+        }
+        
+        .compact-table th {
+            text-align: left;
+            padding: 5px 4px;
+            background-color: #f8fafc;
+            border-bottom: 1px solid var(--border-color);
+            font-weight: 600;
+            color: var(--secondary-color);
+            white-space: nowrap;
+        }
+        
+        .compact-table td {
+            padding: 4px;
+            border-bottom: 1px solid var(--border-color);
+            vertical-align: middle;
+            height: 28px;
+        }
+        
+        .compact-table tr:last-child td {
+            border-bottom: none;
+        }
+        
+        .compact-table tr:hover {
+            background-color: #f8fafc;
+        }
+        
+        /* Highlight for newest stocks */
+        .newest-stock {
+            background-color: var(--newest-color) !important;
+            font-weight: 600;
+        }
+        
+        .recent-stock {
+            background-color: var(--recent-color) !important;
+        }
+        
+        .stock-code {
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+        
+        .strategy-name {
+            font-size: 0.7rem;
+            color: var(--secondary-color);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 70px;
+        }
+        
+        .ma-toggle {
+            border: none;
+            background: none;
+            cursor: pointer;
+            font-size: 0.9rem;
+            width: 22px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 3px;
+        }
+        
+        .ma-yes {
+            color: var(--success-color);
+        }
+        
+        .ma-no {
+            color: var(--danger-color);
+        }
+        
+        .action-cell {
+            display: flex;
+            gap: 2px;
+            align-items: center;
+        }
+        
+        .icon-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 2px;
+            border-radius: 2px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--secondary-color);
+            width: 18px;
+            height: 18px;
+        }
+        
+        .icon-btn:hover {
+            background-color: #f1f5f9;
+        }
+        
+        .link-btn:hover {
+            color: var(--primary-color);
+        }
+        
+        .priority-btn:hover {
+            color: var(--warning-color);
+        }
+        
+        .delete-btn:hover {
+            color: var(--danger-color);
+        }
+        
+        /* Priority indicators */
+        .priority-high {
+            border-left: 2px solid var(--danger-color);
+        }
+        
+        .priority-medium {
+            border-left: 2px solid var(--warning-color);
+        }
+        
+        .priority-low {
+            border-left: 2px solid var(--success-color);
+        }
+        
+        /* Analysis Panel */
+        .analysis-panel {
+            margin-top: 12px;
+            padding: 10px;
+            background-color: var(--light-color);
+            border-radius: var(--border-radius);
+            font-size: 0.75rem;
+            border: 1px solid var(--border-color);
+        }
+        
+        .analysis-summary {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            text-align: center;
+        }
+        
+        .analysis-item {
+            padding: 8px;
+            border-radius: 4px;
+            background-color: white;
+        }
+        
+        .analysis-label {
+            font-size: 0.7rem;
+            color: var(--secondary-color);
+            margin-bottom: 2px;
+        }
+        
+        .analysis-value {
+            font-weight: bold;
+            font-size: 0.9rem;
+            color: var(--primary-color);
+        }
+        
+        /* Actions */
+        .actions {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 6px;
+            margin-top: 12px;
+        }
+        
+        button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 7px 10px;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 0.8rem;
+        }
+        
+        .btn-danger {
+            background-color: var(--danger-color);
+        }
+        
+        .btn-success {
+            background-color: var(--success-color);
+        }
+        
+        footer {
+            margin-top: 12px;
+            text-align: center;
+            color: var(--secondary-color);
+            font-size: 0.7rem;
+        }
+        
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 100;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.5);
+        }
+        
+        .modal-content {
+            background-color: #fefefe;
+            margin: 10% auto;
+            padding: 16px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 280px;
+            border-radius: var(--border-radius);
+        }
+        
+        .modal-content h3 {
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+        }
+        
+        .modal-content p {
+            margin-bottom: 8px;
+            font-size: 0.75rem;
+        }
+        
+        .modal-content input {
+            width: 100%;
+            padding: 6px;
+            margin-bottom: 8px;
+            border: 1px solid var(--border-color);
+            border-radius: 3px;
+            font-size: 0.75rem;
+        }
+        
+        .modal-buttons {
+            display: flex;
+            justify-content: space-between;
+            gap: 8px;
+        }
+        
+        .btn {
+            background-color: #94a3b8;
+            color: white;
+            flex: 1;
+            padding: 6px;
+            font-size: 0.75rem;
+        }
+        
+        .btn-primary {
+            background-color: var(--primary-color);
+        }
+        
+        /* Autocomplete */
+        .autocomplete-items {
+            position: absolute;
+            border: 1px solid var(--border-color);
+            z-index: 99;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background-color: white;
+            max-height: 120px;
+            overflow-y: auto;
+            border-radius: 0 0 3px 3px;
+        }
+        
+        .autocomplete-items div {
+            padding: 6px;
+            cursor: pointer;
+            background-color: #fff; 
+            border-bottom: 1px solid var(--border-color); 
+            font-size: 0.8rem;
+        }
+        
+        .autocomplete-items div:hover {
+            background-color: #f1f5f9;
+        }
+
+        /* FAQ Accordion Styles */
+        .faq-section {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f8fafc;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .faq-section h2 {
+            text-align: center;
+            color: #2563eb;
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+        }
+
+        .accordion {
+            width: 100%;
+        }
+
+        .accordion-item {
+            margin-bottom: 8px;
+            border-radius: 6px;
+            overflow: hidden;
+            border: 1px solid #e2e8f0;
+        }
+
+        .accordion-header {
+            width: 100%;
+            padding: 12px 15px;
+            background: white;
+            border: none;
+            text-align: left;
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: background-color 0.2s;
+        }
+
+        .accordion-header:hover {
+            background-color: #f1f5f9;
+        }
+
+        .accordion-header::after {
+            content: '+';
+            font-size: 1rem;
+            font-weight: bold;
+            transition: transform 0.2s;
+        }
+
+        .accordion-header.active::after {
+            content: '-';
+        }
+
+        .accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+            background: white;
+        }
+
+        .accordion-content-inner {
+            padding: 0 15px 15px;
+            font-size: 0.75rem;
+            line-height: 1.5;
+        }
+
+        .accordion-content-inner p {
+            margin-bottom: 8px;
+        }
+
+        .accordion-content-inner ul {
+            padding-left: 20px;
+            margin-bottom: 10px;
+        }
+
+        .accordion-content-inner li {
+            margin-bottom: 4px;
+        }
+
+        /* Color coding for different sections */
+        .accordion-item:nth-child(1) .accordion-header { border-left: 4px solid #2563eb; }
+        .accordion-item:nth-child(2) .accordion-header { border-left: 4px solid #10b981; }
+        .accordion-item:nth-child(3) .accordion-header { border-left: 4px solid #f59e0b; }
+        .accordion-item:nth-child(4) .accordion-header { border-left: 4px solid #ef4444; }
+        .accordion-item:nth-child(5) .accordion-header { border-left: 4px solid #8b5cf6; }
+        .accordion-item:nth-child(6) .accordion-header { border-left: 4px solid #06b6d4; }
+        .accordion-item:nth-child(7) .accordion-header { border-left: 4px solid #84cc16; }
+        .accordion-item:nth-child(8) .accordion-header { border-left: 4px solid #ef4444; }
+        .accordion-item:nth-child(9) .accordion-header { border-left: 4px solid #64748b; }
+
+        /* Responsive */
+        @media (max-width: 1400px) {
+            .multi-column-layout {
+                grid-template-columns: repeat(5, 1fr);
+            }
+        }
+        
+        @media (max-width: 1200px) {
+            .multi-column-layout {
+                grid-template-columns: repeat(4, 1fr);
+            }
+        }
+        
+        @media (max-width: 992px) {
+            .multi-column-layout {
+                grid-template-columns: repeat(3, 1fr);
+            }
+            
+            .quick-selection {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .multi-column-layout {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .input-row {
+                grid-template-columns: 1fr;
+            }
+            
+            .filter-row {
+                grid-template-columns: 1fr;
+            }
+            
+            .analysis-summary {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .actions {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .faq-section {
+                padding: 10px;
+            }
+
+            .accordion-header {
+                padding: 10px 12px;
+            }
+
+            .accordion-content-inner {
+                padding: 0 12px 12px;
+            }
+        }
+        
+        @media (max-width: 576px) {
+            .multi-column-layout {
+                grid-template-columns: 1fr;
+            }
+            
+            .analysis-summary {
+                grid-template-columns: 1fr;
+            }
+            
+            .actions {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Stock Wishlist</h1>
+            <p class="subtitle">Kelola wishlist saham berdasarkan strategi trading</p>
+        </header>
+        
+        <!-- Quick Input Section -->
+        <div class="quick-input-section">
+            <div class="input-row">
+                <div class="input-group">
+                    <label for="newStockName">Kode Saham</label>
+                    <input type="text" id="newStockName" placeholder="Contoh: ANTM" autocomplete="off">
+                </div>
+                <button id="addStockBtn" class="add-btn">Tambah Saham</button>
+            </div>
+            
+            <div class="quick-selection">
+                <div class="selection-group">
+                    <div class="selection-label">Pilih Strategi:</div>
+                    <div class="button-grid" id="strategyButtons">
+                        <!-- Strategy buttons will be generated here -->
+                    </div>
+                </div>
+                
+                <div class="selection-group">
+                    <div class="selection-label">Pilih Timeframe:</div>
+                    <div class="button-grid" id="timeframeButtons">
+                        <!-- Timeframe buttons will be generated here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Filter Section -->
+        <div class="filter-section">
+            <div class="filter-row">
+                <div class="search-box">
+                    <label for="searchInput">Cari Saham/Strategi</label>
+                    <input type="text" id="searchInput" placeholder="Ketik untuk mencari...">
+                </div>
+                <div class="quick-filters">
+                    <button class="filter-btn" data-priority="high">High</button>
+                    <button class="filter-btn" data-priority="medium">Medium</button>
+                    <button class="filter-btn" data-priority="low">Low</button>
+                </div>
+                <button id="clearFilters" class="clear-btn">Clear Filters</button>
+            </div>
+        </div>
+        
+        <!-- Multi Column Layout - 6 Columns -->
+        <div class="multi-column-layout" id="multiColumnLayout">
+            <!-- Columns will be generated here -->
+        </div>
+        
+        <!-- Analysis Panel -->
+        <div class="analysis-panel">
+            <div class="analysis-summary">
+                <div class="analysis-item">
+                    <div class="analysis-label">Total Saham</div>
+                    <div class="analysis-value" id="totalSaham">0</div>
+                </div>
+                <div class="analysis-item">
+                    <div class="analysis-label">Strategi Aktif</div>
+                    <div class="analysis-value" id="activeStrategi">0</div>
+                </div>
+                <div class="analysis-item">
+                    <div class="analysis-label">High Priority</div>
+                    <div class="analysis-value" id="highPriority">0</div>
+                </div>
+                <div class="analysis-item">
+                    <div class="analysis-label">Avg TF</div>
+                    <div class="analysis-value" id="avgTimeframe">N/A</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Actions -->
+        <div class="actions">
+            <button id="resetBtn" class="btn-danger">Reset Data</button>
+            <button id="exportBtn" class="btn-success">Export Data</button>
+            <button id="importBtn" class="btn-success">Import Data</button>
+            <button id="manageStrategyBtn" class="btn">Kelola Strategi</button>
+            <input type="file" id="importFile" style="display: none;">
+        </div>
+    </div>
+    
+    <!-- Reset Modal -->
+    <div id="resetModal" class="modal">
+        <div class="modal-content">
+            <h3>Konfirmasi Reset Data</h3>
+            <p>Masukkan PIN untuk reset data. PIN: 1234</p>
+            <input type="password" id="pinInput" placeholder="Masukkan PIN">
+            <div class="modal-buttons">
+                <button id="cancelReset" class="btn">Batal</button>
+                <button id="confirmReset" class="btn-primary">Konfirmasi</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Manage Strategy Modal -->
+    <div id="manageStrategyModal" class="modal">
+        <div class="modal-content">
+            <h3>Kelola Strategi</h3>
+            <div class="input-row" style="margin-bottom: 10px;">
+                <input type="text" id="newStrategyName" placeholder="Nama strategi baru">
+                <button id="addStrategyBtn" class="add-btn">Tambah</button>
+            </div>
+            <div id="strategyList" style="max-height: 200px; overflow-y: auto; margin-bottom: 10px;">
+                <!-- Strategy list will be generated here -->
+            </div>
+            <div class="modal-buttons">
+                <button id="cancelManageStrategy" class="btn">Tutup</button>
+                <button id="deleteStrategyBtn" class="btn-danger">Hapus Strategi</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Delete Strategy Modal -->
+    <div id="deleteStrategyModal" class="modal">
+        <div class="modal-content">
+            <h3>Hapus Strategi</h3>
+            <p>Pilih strategi yang akan dihapus:</p>
+            <div id="deleteStrategyList" style="max-height: 150px; overflow-y: auto; margin-bottom: 10px;">
+                <!-- Delete strategy list will be generated here -->
+            </div>
+            <p>Masukkan PIN untuk konfirmasi. PIN: 1234</p>
+            <input type="password" id="deleteStrategyPin" placeholder="Masukkan PIN">
+            <div class="modal-buttons">
+                <button id="cancelDeleteStrategy" class="btn">Batal</button>
+                <button id="confirmDeleteStrategy" class="btn-danger">Hapus</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- FAQ Section - Horizontal Layout -->
+<div class="faq-section" style="margin-top: 30px; padding: 15px; background: #1e293b; border-radius: 8px; border: 1px solid #334155;">
+    <h2 style="text-align: center; color: #60a5fa; margin-bottom: 15px; font-size: 1rem;">📚 FAQ & Panduan Stock Wishlist</h2>
+    
+    <div class="faq-tabs" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 15px;">
+        <button class="faq-tab active" data-tab="concept" style="background: #3b82f6; color: white; border: none; padding: 8px 6px; border-radius: 4px; font-size: 0.7rem; cursor: pointer; font-weight: 500;">Konsep Dasar</button>
+        <button class="faq-tab" data-tab="workflow" style="background: #10b981; color: white; border: none; padding: 8px 6px; border-radius: 4px; font-size: 0.7rem; cursor: pointer; font-weight: 500;">Workflow</button>
+        <button class="faq-tab" data-tab="psychology" style="background: #f59e0b; color: white; border: none; padding: 8px 6px; border-radius: 4px; font-size: 0.7rem; cursor: pointer; font-weight: 500;">Psikologi</button>
+        <button class="faq-tab" data-tab="tutorial" style="background: #ef4444; color: white; border: none; padding: 8px 6px; border-radius: 4px; font-size: 0.7rem; cursor: pointer; font-weight: 500;">Tutorial</button>
+        <button class="faq-tab" data-tab="strategy" style="background: #8b5cf6; color: white; border: none; padding: 8px 6px; border-radius: 4px; font-size: 0.7rem; cursor: pointer; font-weight: 500;">Multi Strategy</button>
+        <button class="faq-tab" data-tab="features" style="background: #06b6d4; color: white; border: none; padding: 8px 6px; border-radius: 4px; font-size: 0.7rem; cursor: pointer; font-weight: 500;">Fitur Utama</button>
+        <button class="faq-tab" data-tab="tips" style="background: #84cc16; color: white; border: none; padding: 8px 6px; border-radius: 4px; font-size: 0.7rem; cursor: pointer; font-weight: 500;">Tips Expert</button>
+        <button class="faq-tab" data-tab="warning" style="background: #dc2626; color: white; border: none; padding: 8px 6px; border-radius: 4px; font-size: 0.7rem; cursor: pointer; font-weight: 500;">Peringatan</button>
+        <button class="faq-tab" data-tab="info" style="background: #64748b; color: white; border: none; padding: 8px 6px; border-radius: 4px; font-size: 0.7rem; cursor: pointer; font-weight: 500;">Info Standar</button>
+    </div>
+
+    <div class="faq-content" style="background: #0f172a; border-radius: 6px; padding: 15px; min-height: 200px;">
+        <!-- Konsep Dasar -->
+        <div class="faq-tab-content active" id="concept-tab" style="color: #e2e8f0;">
+            <h3 style="color: #60a5fa; margin-bottom: 10px; font-size: 0.9rem;">🎯 KONSEP DASAR PROGRAM</h3>
+            <p style="margin-bottom: 8px; font-size: 0.75rem;"><strong style="color: #93c5fd;">Apa tujuan program ini?</strong></p>
+            <p style="font-size: 0.75rem; line-height: 1.4;">Program ini adalah "buku catatan pintar" untuk mengorganisir saham incaran berdasarkan strategi trading dalam berbagai timeframe. Bukan untuk generate signal, tapi untuk memudahkan monitoring dan eksekusi.</p>
+        </div>
+
+        <!-- Workflow Praktis -->
+        <div class="faq-tab-content" id="workflow-tab" style="color: #e2e8f0; display: none;">
+            <h3 style="color: #34d399; margin-bottom: 10px; font-size: 0.9rem;">⚡ WORKFLOW PRAKTIS SAAT MARKET BUKA</h3>
+            <p style="margin-bottom: 8px; font-size: 0.75rem;"><strong style="color: #6ee7b7;">Contoh penggunaan nyata:</strong></p>
+            <div style="background: #064e3b; padding: 10px; border-radius: 4px; margin: 10px 0; border-left: 3px solid #10b981;">
+                <p style="font-size: 0.7rem; margin: 4px 0;">🕘 09:00 - Market open → Pantau top gainers/volume</p>
+                <p style="font-size: 0.7rem; margin: 4px 0;">🕘 09:15 - Lihat ANTM di top volume → Cek wishlist</p>
+                <p style="font-size: 0.7rem; margin: 4px 0;">🕘 09:15:10 - ANTM ada di wishlist strategi NR47 TF 15m</p>
+                <p style="font-size: 0.7rem; margin: 4px 0;">🕘 09:15:20 - Klik link chart → Analisis quick 10 detik</p>
+                <p style="font-size: 0.7rem; margin: 4px 0;">🕘 09:15:30 - Putuskan: ENTRY atau TUNGGU</p>
+            </div>
+        </div>
+
+        <!-- Psychology Trading -->
+        <div class="faq-tab-content" id="psychology-tab" style="color: #e2e8f0; display: none;">
+            <h3 style="color: #fbbf24; margin-bottom: 10px; font-size: 0.9rem;">🧠 MANFAAT PSIKOLOGI TRADING</h3>
+            <p style="margin-bottom: 8px; font-size: 0.75rem;"><strong style="color: #fcd34d;">Program ini membantu mengatasi:</strong></p>
+            <ul style="padding-left: 20px; font-size: 0.75rem;">
+                <li style="margin-bottom: 6px;">❌ <strong style="color: #fcd34d;">FOMO</strong> (Fear Of Missing Out) - Anda sudah punya plan sebelumnya</li>
+                <li style="margin-bottom: 6px;">❌ <strong style="color: #fcd34d;">Overtrading</strong> - Hanya trade saham yang ada di wishlist</li>
+                <li style="margin-bottom: 6px;">❌ <strong style="color: #fcd34d;">Analysis Paralysis</strong> - Decision making lebih cepat karena sudah ada data</li>
+                <li style="margin-bottom: 6px;">❌ <strong style="color: #fcd34d;">Emotional Trading</strong> - Mengikuti rencana yang sudah disusun</li>
+            </ul>
+        </div>
+
+        <!-- Tutorial Singkat -->
+        <div class="faq-tab-content" id="tutorial-tab" style="color: #e2e8f0; display: none;">
+            <h3 style="color: #f87171; margin-bottom: 10px; font-size: 0.9rem;">🚀 TUTORIAL 5 MENIT UNTUK PEMULA</h3>
+            
+            <p style="margin-bottom: 6px; font-size: 0.75rem;"><strong style="color: #fca5a5;">Step 1: Setup Strategi (2 menit)</strong></p>
+            <ul style="padding-left: 20px; margin-bottom: 10px; font-size: 0.75rem;">
+                <li style="margin-bottom: 4px;">Klik "Kelola Strategi"</li>
+                <li style="margin-bottom: 4px;">Tambah strategi trading Anda</li>
+                <li style="margin-bottom: 4px;">Hapus strategi default yang tidak digunakan</li>
+            </ul>
+
+            <p style="margin-bottom: 6px; font-size: 0.75rem;"><strong style="color: #fca5a5;">Step 2: Tambah Saham (2 menit)</strong></p>
+            <ul style="padding-left: 20px; margin-bottom: 10px; font-size: 0.75rem;">
+                <li style="margin-bottom: 4px;">Pilih strategi dan timeframe</li>
+                <li style="margin-bottom: 4px;">Ketik kode saham (auto-complete akan membantu)</li>
+                <li style="margin-bottom: 4px;">Klik "Tambah Saham"</li>
+            </ul>
+
+            <p style="margin-bottom: 6px; font-size: 0.75rem;"><strong style="color: #fca5a5;">Step 3: Gunakan Saat Trading (1 menit)</strong></p>
+            <ul style="padding-left: 20px; font-size: 0.75rem;">
+                <li style="margin-bottom: 4px;">Pantau saham trending</li>
+                <li style="margin-bottom: 4px;">Cek cepat di wishlist</li>
+                <li style="margin-bottom: 4px;">Klik link chart → Analisis → Entry</li>
+            </ul>
+        </div>
+
+        <!-- Multi Strategy -->
+        <div class="faq-tab-content" id="strategy-tab" style="color: #e2e8f0; display: none;">
+            <h3 style="color: #a78bfa; margin-bottom: 10px; font-size: 0.9rem;">🔄 KEUNGGULAN MULTI-STRATEGY</h3>
+            <p style="margin-bottom: 8px; font-size: 0.75rem;"><strong style="color: #c4b5fd;">Contoh: Saham ANTM bisa masuk multiple strategy</strong></p>
+            <div style="background: #4c1d95; padding: 10px; border-radius: 4px; margin-bottom: 10px; border-left: 3px solid #8b5cf6;">
+                <p style="font-size: 0.75rem; margin: 4px 0;">✅ <strong>NR47</strong> di TF 15 menit (Scalping)</p>
+                <p style="font-size: 0.75rem; margin: 4px 0;">✅ <strong>BulDiv</strong> di TF 1 jam (Swing)</p>
+                <p style="font-size: 0.75rem; margin: 4px 0;">✅ <strong>SMC</strong> di TF 4 jam (Position)</p>
+            </div>
+            <p style="font-size: 0.75rem; margin-top: 8px;">Ini kekuatan program - semua kemungkinan entry terdata rapi dalam satu tempat!</p>
+        </div>
+
+        <!-- Fitur Utama -->
+        <div class="faq-tab-content" id="features-tab" style="color: #e2e8f0; display: none;">
+            <h3 style="color: #22d3ee; margin-bottom: 10px; font-size: 0.9rem;">🛠️ FITUR UTAMA & CARA PAKAI</h3>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 0.75rem;">
+                <div style="background: #164e63; padding: 8px; border-radius: 4px;">
+                    <p style="margin: 0;"><strong style="color: #67e8f9;">🎯 Quick Input</strong> - Tambah saham cepat dengan strategi & timeframe</p>
+                </div>
+                <div style="background: #164e63; padding: 8px; border-radius: 4px;">
+                    <p style="margin: 0;"><strong style="color: #67e8f9;">🔍 Smart Filter</strong> - Cari by saham/strategi, filter by prioritas</p>
+                </div>
+                <div style="background: #164e63; padding: 8px; border-radius: 4px;">
+                    <p style="margin: 0;"><strong style="color: #67e8f9;">📊 Multi-Column</strong> - 6 kolom untuk organisasi visual yang rapi</p>
+                </div>
+                <div style="background: #164e63; padding: 8px; border-radius: 4px;">
+                    <p style="margin: 0;"><strong style="color: #67e8f9;">📈 MA Toggle</strong> - Penanda kondisi MA sesuai sistem trading Anda</p>
+                </div>
+                <div style="background: #164e63; padding: 8px; border-radius: 4px;">
+                    <p style="margin: 0;"><strong style="color: #67e8f9;">💾 Export/Import</strong> - Backup data dan share dengan mudah</p>
+                </div>
+                <div style="background: #164e63; padding: 8px; border-radius: 4px;">
+                    <p style="margin: 0;"><strong style="color: #67e8f9;">⚙️ Manage Strategy</strong> - Customize strategi sesuai style trading</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tips Advanced -->
+        <div class="faq-tab-content" id="tips-tab" style="color: #e2e8f0; display: none;">
+            <h3 style="color: #a3e635; margin-bottom: 10px; font-size: 0.9rem;">💡 TIPS ADVANCED UNTUK EXPERT</h3>
+            
+            <p style="margin-bottom: 6px; font-size: 0.75rem;"><strong style="color: #bef264;">Prioritas Management:</strong></p>
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 12px;">
+                <div style="background: #365314; padding: 8px; border-radius: 4px; text-align: center;">
+                    <p style="margin: 0; font-size: 0.7rem;">🚀 <strong>High</strong><br>Pantau ketat</p>
+                </div>
+                <div style="background: #365314; padding: 8px; border-radius: 4px; text-align: center;">
+                    <p style="margin: 0; font-size: 0.7rem;">⚡ <strong>Medium</strong><br>Saham backup</p>
+                </div>
+                <div style="background: #365314; padding: 8px; border-radius: 4px; text-align: center;">
+                    <p style="margin: 0; font-size: 0.7rem;">📊 <strong>Low</strong><br>Monitoring jangka panjang</p>
+                </div>
+            </div>
+
+            <p style="margin-bottom: 6px; font-size: 0.75rem;"><strong style="color: #bef264;">Workflow Harian Efektif:</strong></p>
+            <ul style="padding-left: 20px; font-size: 0.75rem;">
+                <li style="margin-bottom: 4px;">Pre-market: Review wishlist, set alert</li>
+                <li style="margin-bottom: 4px;">Market open: Pantau running trade + wishlist</li>
+                <li style="margin-bottom: 4px;">Execution: Quick check → Entry decision</li>
+                <li style="margin-bottom: 4px;">Post-market: Update wishlist, evaluasi</li>
+            </ul>
+        </div>
+
+        <!-- Warning & Disclaimer -->
+        <div class="faq-tab-content" id="warning-tab" style="color: #e2e8f0; display: none;">
+            <h3 style="color: #f87171; margin-bottom: 10px; font-size: 0.9rem;">⚠️ PERINGATAN PENTING</h3>
+            <div style="background: #7f1d1d; padding: 15px; border-radius: 6px; border: 1px solid #dc2626;">
+                <p style="font-size: 0.8rem; font-weight: bold; color: #fca5a5; margin-bottom: 8px;">INI BUKAN SIGNAL GENERATOR!</p>
+                <p style="font-size: 0.75rem; margin: 0;">Program ini hanya alat bantu organisasi. Keputusan trading tetap membutuhkan analisis technical yang proper. Gunakan sebagai bagian dari sistem trading lengkap, bukan sebagai satu-satunya tools.</p>
+            </div>
+        </div>
+
+        <!-- Support Info -->
+        <div class="faq-tab-content" id="info-tab" style="color: #e2e8f0; display: none;">
+            <h3 style="color: #94a3b8; margin-bottom: 10px; font-size: 0.9rem;">ℹ️ INFORMASI STANDAR</h3>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 0.75rem;">
+                <div style="background: #334155; padding: 10px; border-radius: 4px;">
+                    <p style="margin: 0 0 4px 0;"><strong style="color: #cbd5e1;">Kompatibilitas:</strong></p>
+                    <p style="margin: 0;">Browser modern (Chrome, Firefox, Safari, Edge)</p>
+                </div>
+                <div style="background: #334155; padding: 10px; border-radius: 4px;">
+                    <p style="margin: 0 0 4px 0;"><strong style="color: #cbd5e1;">Penyimpanan Data:</strong></p>
+                    <p style="margin: 0;">Local browser (aman & privat)</p>
+                </div>
+                <div style="background: #334155; padding: 10px; border-radius: 4px;">
+                    <p style="margin: 0 0 4px 0;"><strong style="color: #cbd5e1;">Update:</strong></p>
+                    <p style="margin: 0;">Auto-save, manual export untuk backup</p>
+                </div>
+                <div style="background: #334155; padding: 10px; border-radius: 4px;">
+                    <p style="margin: 0 0 4px 0;"><strong style="color: #cbd5e1;">Support:</strong></p>
+                    <p style="margin: 0;">TradingView integration untuk chart analysis</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.faq-tab.active {
+    transform: scale(1.05);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+
+.faq-tab:hover {
+    opacity: 0.9;
+    transform: translateY(-1px);
+}
+
+@media (max-width: 768px) {
+    .faq-tabs {
+        grid-template-columns: repeat(2, 1fr) !important;
+    }
+    
+    .faq-content {
+        padding: 10px !important;
+    }
+}
+
+@media (max-width: 480px) {
+    .faq-tabs {
+        grid-template-columns: 1fr !important;
+    }
+    
+    #features-tab .faq-tab-content > div,
+    #tips-tab .faq-tab-content > div,
+    #info-tab .faq-tab-content > div {
+        grid-template-columns: 1fr !important;
+    }
+}
+</style>
+
+<script>
+// Tab functionality for FAQ
+document.addEventListener('DOMContentLoaded', function() {
+    const tabs = document.querySelectorAll('.faq-tab');
+    const tabContents = document.querySelectorAll('.faq-tab-content');
+    
+    tabs.forEach(tab => {
+        tab.addEventListener('click', function() {
+            const tabId = this.getAttribute('data-tab');
+            
+            // Remove active class from all tabs and contents
+            tabs.forEach(t => t.classList.remove('active'));
+            tabContents.forEach(content => content.style.display = 'none');
+            
+            // Add active class to clicked tab
+            this.classList.add('active');
+            
+            // Show corresponding content
+            document.getElementById(`${tabId}-tab`).style.display = 'block';
+        });
+    });
+});
+</script>
+    
+    <footer>
+        <p>&copy; 2025 Bandaro Kari | Powered by TradingView</p>
+    </footer>
+    
+    <script>
+        let wishlistData = [];
+        let strategiOptions = ["NR47", "HidBulDiv", "BulDiv", "SMC w/ TP", "RBR", "Quasimodo", "ChocH/Bos", "BozzTrade"];
+        const stockCodes = ["AALI", "ABDA", "ABMM", "ACES", "ACST", "ADHI", "ADMF", "ADMR", "ADRO", "AGII", "AGRO", "AGRS", "AHAP", "AKRA", "ALDO", "ALKA", "ALMI", "ALTO", "AMFG", "AMIN", "AMOR", "AMRT", "ANDI", "ANJT", "ANTM", "APEX", "APIC", "APII", "APLN", "ARII", "ARNA", "ARTA", "ARTO", "ASBI", "ASDM", "ASGR", "ASII", "ASJT", "ASMI", "ASRI", "ASSA", "ATAP", "ATIC", "ATPK", "AUTO", "AVIA", "AYLS", "BABP", "BAJA", "BALI", "BANK", "BAPA", "BAPI", "BATA", "BAYU", "BBCA", "BBHI", "BBKP", "BBLD", "BBMD", "BBNI", "BBRI", "BBRM", "BBSS", "BBTN", "BBYB", "BCAP", "BCIC", "BCIP", "BDKR", "BDMN", "BEEF", "BEKS", "BELL", "BESS", "BEST", "BHAT", "BHIT", "BIKA", "BIMA", "BINA", "BIPI", "BIRD", "BISI", "BJBR", "BJTM", "BKDP", "BKSL", "BKSW", "BLTA", "BLTZ", "BLUE", "BMAS", "BMHS", "BMRI", "BMSR", "BMTR", "BNBA", "BNBR", "BNGA", "BNII", "BNLI", "BOGA", "BOLA", "BOLT", "BOSS", "BPFI", "BPII", "BPTR", "BRAM", "BRIS", "BRMS", "BRNA", "BRPT", "BSDE", "BSIM", "BSML", "BSSR", "BSWD", "BTEL", "BTEK", "BTON", "BTPN", "BTPS", "BUDI", "BUKA", "BULL", "BUMI", "BUVA", "BVIC", "BWPT", "BYAN", "CAKK", "CAMP", "CANI", "CARE", "CARS", "CASA", "CASH", "CASS", "CBPE", "CBRE", "CBUT", "CCSI", "CEKA", "CENT", "CFIN", "CHEM", "CHIP", "CINT", "CITA", "CITY", "CLPI", "CMNP", "CMNT", "CMPP", "CMRY", "CNKO", "CNTB", "CNTX", "COAL", "COCO", "CPIN", "CPRI", "CPRO", "CSAP", "CSMI", "CSRA", "CTBN", "CTRA", "CTTH", "CUAN", "DART", "DATA", "DAYA", "DEAL", "DEFI", "DEPO", "DFAM", "DGIK", "DGNS", "DILD", "DIVA", "DKFT", "DLTA", "DMAS", "DMMX", "DMND", "DNAX", "DNKS", "DOID", "DOSS", "DPNS", "DPUM", "DRMA", "DSFI", "DSNG", "DSSA", "DTMP", "DUTI", "DVLA", "DWGL", "DYAN", "EAST", "ECII", "EDGE", "EKAD", "ELIT", "ELPI", "ELSA", "ELTY", "EMDE", "EMTK", "ENAK", "ENRG", "ENVY", "EPAC", "EPMT", "ERAA", "ERTX", "ESIP", "ESSA", "ESTA", "ESTI", "ETWA", "EXCL", "FAPA", "FAST", "FASW", "FILM", "FIMP", "FIRE", "FISH", "FITT", "FLMC", "FMII", "FOOD", "FORU", "FORZ", "FPNI", "FREN", "FUJI", "GAMA", "GDST", "GDYR", "GEMA", "GEMS", "GGRM", "GHON", "GIAA", "GJTL", "GLOB", "GLVA", "GMFI", "GMTD", "GNPR", "GOLL", "GOOD", "GOWL", "GPRA", "GREN", "GSMF", "GTBO", "GTSI", "GWSA", "GZCO", "HADE", "HAIS", "HALO", "HATM", "HDFA", "HDIT", "HEAL", "HELI", "HERO", "HEXA", "HITS", "HMSP", "HOKI", "HOME", "HOMI", "HOPE", "HOTL", "HRME", "HRTA", "HRUM", "HYBN", "IATA", "IBFN", "ICBP", "ICON", "IDEA", "IDPR", "IFII", "IFSH", "IGAR", "IIKP", "IKAI", "IKAN", "IKBI", "IMAS", "IMJS", "IMPC", "INAI", "INCF", "INCI", "INCO", "INDF", "INDO", "INDR", "INDS", "INDX", "INDY", "INKP", "INPC", "INPP", "INPS", "INRU", "INTA", "INTD", "INTP", "IOIL", "IPCC", "IPCM", "IPOL", "IPTV", "IRRA", "ISAP", "ISAT", "ISSP", "ITIC", "ITMA", "ITMG", "JARR", "JASA", "JAWA", "JECC", "JGLE", "JIHD", "JKON", "JMDT", "JMKA", "JPFA", "JRPT", "JSKY", "JSMR", "JSPT", "JTPE", "KAEF", "KARW", "KAYU", "KBAG", "KBLI", "KBLM", "KBLV", "KBRI", "KDSI", "KEEN", "KEJU", "KIAS", "KICI", "KIJA", "KING", "KINO", "KIOS", "KKES", "KKGI", "KLBF", "KLIN", "KMDS", "KMTR", "KOBX", "KOIN", "KONI", "KOPI", "KOTA", "KPAL", "KPAS", "KPIG", "KRAH", "KRAS", "KREN", "LABA", "LAND", "LAPD", "LCGP", "LCKM", "LEAD", "LIFE", "LINK", "LION", "LMSH", "LPCK", "LPGI", "LPIN", "LPKR", "LPLI", "LPPF", "LPPS", "LRNA", "LSIP", "LTLS", "LUCK", "MABA", "MAGP", "MAIN", "MAMI", "MAPA", "MAPB", "MARI", "MARK", "MASA", "MAYA", "MBAP", "MBSS", "MBTO", "MCAS", "MCOL", "MCOR", "MDIA", "MDKA", "MDKI", "MDLN", "MDRN", "MEDC", "MEGA", "MEJA", "MFIN", "MFMI", "MGNA", "MGRO", "MICE", "MINA", "MIRA", "MITI", "MKNT", "MKPI", "MLBI", "MLIA", "MLPL", "MLPT", "MLTX", "MMLP", "MNCN", "MOLI", "MPMX", "MPOW", "MPPA", "MRAT", "MREI", "MSIN", "MSKY", "MTDL", "MTFN", "MTLA", "MTMH", "MTPS", "MTRA", "MTSM", "MTWI", "MYOH", "MYOR", "MYRX", "MYTX", "NANO", "NASA", "NAYZ", "NCKL", "NELY", "NETV", "NFCX", "NICE", "NIKL", "NIPS", "NIRO", "NISP", "NOBU", "NRCA", "NSSS", "NTBK", "NUSA", "NZIA", "OASA", "OBMD", "OCAP", "OILS", "OKAS", "OLIV", "OMRE", "OPMS", "PACK", "PADI", "PALM", "PAMG", "PANI", "PANR", "PANS", "PBID", "PBSA", "PCAR", "PDES", "PEGE", "PEHA", "PEVE", "PGAS", "PGJO", "PGUN", "PICO", "PIPA", "PJAA", "PKPK", "PLAN", "PLAS", "PLIN", "PMJS", "PMMP", "PNBN", "PNBS", "PNIN", "PNLF", "POLA", "POLI", "POLL", "POLU", "POOL", "PORT", "POSA", "POWR", "PPGL", "PPRE", "PPRO", "PRAS", "PRDA", "PRIM", "PROS", "PSAB", "PSDN", "PSGO", "PSKT", "PTBA", "PTDU", "PTIS", "PTMP", "PTPP", "PTPW", "PTRO", "PTSN", "PTSP", "PUDP", "PURA", "PURE", "PURI", "PWON", "PYFA", "RAJA", "RALS", "RANC", "RBMS", "RCCC", "REAL", "RELI", "RICY", "RIGS", "RIMO", "RISE", "RMBA", "RMKE", "ROCK", "RODA", "ROTI", "ROYAL", "RSGK", "RUIS", "SAFE", "SAGE", "SAMA", "SAMF", "SAPX", "SATU", "SBAT", "SBMA", "SCCO", "SCMA", "SCNP", "SCPI", "SDMU", "SDPC", "SDRA", "SFAN", "SGER", "SGRO", "SHID", "SHIP", "SIDO", "SILO", "SIMA", "SIMM", "SIMP", "SINI", "SIPD", "SKBM", "SKLT", "SKRN", "SLIS", "SMAR", "SMBR", "SMCB", "SMDM", "SMDR", "SMGA", "SMGR", "SMKL", "SMKM", "SMMA", "SMMT", "SMRA", "SMRU", "SMSM", "SNLK", "SOFA", "SOHO", "SOLA", "SONA", "SOSS", "SOTS", "SOUL", "SPMA", "SPTO", "SQMI", "SRAJ", "SRIL", "SRSN", "SRTG", "SSIA", "SSMS", "SSTM", "STAA", "STAR", "STTP", "SUGI", "SULI", "SUPR", "SURE", "SWAT", "TALF", "TAMA", "TAMU", "TAPG", "TARA", "TAXI", "TBIG", "TBLA", "TBMS", "TCID", "TCPI", "TDPM", "TEBE", "TECH", "TELE", "TFAS", "TGKA", "TGRA", "TIFA", "TINS", "TIRA", "TIRT", "TJWJ", "TKIM", "TLDN", "TLKM", "TMAS", "TMPI", "TMPO", "TNCA", "TOBA", "TOOL", "TOPS", "TOTL", "TOTO", "TOWR", "TPIA", "TPMA", "TRGU", "TRIM", "TRIN", "TRIS", "TRJA", "TRST", "TRUE", "TRUK", "TRUS", "TSPC", "TUGU", "TWNC", "UANG", "UCID", "ULTJ", "UNIC", "UNIQ", "UNIT", "UNSP", "UNTR", "UNVR", "URBN", "UVCR", "VICI", "VICO", "VINS", "VIVA", "VOKS", "VRNA", "WAPO", "WEGE", "WEHA", "WGSH", "WICO", "WIIM", "WIKA", "WINS", "WIRS", "WMPP", "WMUU", "WOMF", "WOOD", "WOWS", "WSBP", "WSKT", "WTON", "YELO", "YPAS", "ZATA", "ZBRA", "ZONE", "ZYRX"];
+        const DEFAULT_PIN = '1234';
+        let currentFilters = { search: "", timeframe: "", priority: "" };
+        let selectedStrategy = "";
+        let selectedTimeframe = "15m";
+
+        // Timeframe options
+        const timeframeOptions = [
+            { value: "15m", label: "15m" },
+            { value: "30m", label: "30m" },
+            { value: "1j", label: "1j" },
+            { value: "2j", label: "2j" },
+            { value: "4j", label: "4j" },
+            { value: "1H", label: "1H" }
+        ];
+
+        function updateStrategySelect() {
+            const strategyButtons = document.getElementById('strategyButtons');
+            strategyButtons.innerHTML = '';
+            
+            strategiOptions.forEach(strategy => {
+                const button = document.createElement('button');
+                button.className = `strategy-btn ${selectedStrategy === strategy ? 'active' : ''}`;
+                button.textContent = strategy;
+                button.addEventListener('click', () => {
+                    selectedStrategy = strategy;
+                    renderStrategyButtons();
+                });
+                strategyButtons.appendChild(button);
+            });
+        }
+
+        function renderTimeframeButtons() {
+            const timeframeButtons = document.getElementById('timeframeButtons');
+            timeframeButtons.innerHTML = '';
+            
+            timeframeOptions.forEach(tf => {
+                const button = document.createElement('button');
+                button.className = `timeframe-btn ${selectedTimeframe === tf.value ? 'active' : ''}`;
+                button.textContent = tf.label;
+                button.addEventListener('click', () => {
+                    selectedTimeframe = tf.value;
+                    renderTimeframeButtons();
+                });
+                timeframeButtons.appendChild(button);
+            });
+        }
+
+        function saveStrategiOptions() { 
+            localStorage.setItem('strategiOptions', JSON.stringify(strategiOptions)); 
+        }
+        
+        function loadStrategiOptions() { 
+            const saved = localStorage.getItem('strategiOptions'); 
+            if (saved) strategiOptions = JSON.parse(saved); 
+        }
+
+        function renderMultiColumn() {
+            const layout = document.getElementById('multiColumnLayout');
+            layout.innerHTML = '';
+            
+            let filteredData = wishlistData.filter(item => {
+                let matches = true;
+                if (currentFilters.search) {
+                    matches &= (item.nama.toLowerCase().includes(currentFilters.search.toLowerCase()) || 
+                               item.strategi.toLowerCase().includes(currentFilters.search.toLowerCase()));
+                }
+                if (currentFilters.timeframe) matches &= item.timeframe === currentFilters.timeframe;
+                if (currentFilters.priority) matches &= item.priority === currentFilters.priority;
+                return matches;
+            });
+
+            // Sort by ID descending to show newest first
+            filteredData.sort((a, b) => b.id - a.id);
+
+            // Get 5 newest stocks for highlighting
+            const newestStocks = filteredData.slice(0, 5);
+            const newestIds = newestStocks.map(stock => stock.id);
+
+            // Fixed 6 columns
+            const columnCount = 6;
+            
+            // Calculate items per column - start with 15, increase when columns are full
+            let itemsPerColumn = 15;
+            if (filteredData.length > 90) {
+                itemsPerColumn = Math.ceil(filteredData.length / columnCount);
+                // Round up to nearest even number
+                itemsPerColumn = Math.ceil(itemsPerColumn / 2) * 2;
+            }
+
+            // Create 6 columns
+            for (let i = 0; i < columnCount; i++) {
+                const column = document.createElement('div');
+                column.className = 'column';
+                
+                const header = document.createElement('div');
+                header.className = 'column-header';
+                header.textContent = `Kolom ${i + 1}`;
+                column.appendChild(header);
+                
+                const content = document.createElement('div');
+                content.className = 'column-content';
+                
+                const table = document.createElement('table');
+                table.className = 'compact-table';
+                
+                // Create table header with Strategy column
+                const thead = document.createElement('thead');
+                thead.innerHTML = `
+                    <tr>
+                        <th>Saham</th>
+                        <th>Strategi</th>
+                        <th>TF</th>
+                        <th>MA</th>
+                        <th>Aksi</th>
+                    </tr>
+                `;
+                table.appendChild(thead);
+                
+                const tbody = document.createElement('tbody');
+                
+                // Add items to this column
+                const startIndex = i * itemsPerColumn;
+                const endIndex = Math.min(startIndex + itemsPerColumn, filteredData.length);
+                const columnData = filteredData.slice(startIndex, endIndex);
+                
+                columnData.forEach((item, index) => {
+                    const row = document.createElement('tr');
+                    
+                    // Apply priority class
+                    row.className = `priority-${item.priority}`;
+                    
+                    // Apply highlight for newest stocks
+                    if (newestIds.includes(item.id)) {
+                        if (item.id === newestIds[0]) {
+                            row.classList.add('newest-stock');
+                        } else {
+                            row.classList.add('recent-stock');
+                        }
+                    }
+                    
+                    // Format timeframe for display
+                    const displayTimeframe = item.timeframe;
+                    
+                    row.innerHTML = `
+                        <td><span class="stock-code">${item.nama}</span></td>
+                        <td><span class="strategy-name" title="${item.strategi}">${item.strategi}</span></td>
+                        <td>${displayTimeframe}</td>
+                        <td>
+                            <button class="ma-toggle ${item.ma50 === 'ya' ? 'ma-yes' : 'ma-no'}" onclick="toggleMA(${item.id})" title="${item.ma50 === 'ya' ? 'MA aktif' : 'MA tidak aktif'}">
+                                ${item.ma50 === 'ya' ? '✓' : '✗'}
+                            </button>
+                        </td>
+                        <td>
+                            <div class="action-cell">
+                                <a href="${item.link}" target="_blank" class="icon-btn link-btn" title="Buka Chart">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                                        <polyline points="15 3 21 3 21 9"></polyline>
+                                        <line x1="10" y1="14" x2="21" y2="3"></line>
+                                    </svg>
+                                </a>
+                                <button class="icon-btn priority-btn" onclick="changePriority(${item.id})" title="Ubah Prioritas">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                                    </svg>
+                                </button>
+                                <button class="icon-btn delete-btn" onclick="deleteStock(${item.id})" title="Hapus">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="3 6 5 6 21 6"></polyline>
+                                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                    </svg>
+                                </button>
+                            </div>
+                        </td>
+                    `;
+                    
+                    tbody.appendChild(row);
+                });
+                
+                table.appendChild(tbody);
+                content.appendChild(table);
+                column.appendChild(content);
+                layout.appendChild(column);
+            }
+
+            updateAnalysis(filteredData);
+        }
+
+        function toggleMA(id) {
+            const item = wishlistData.find(item => item.id === id);
+            if (item) {
+                item.ma50 = item.ma50 === 'ya' ? 'tidak' : 'ya';
+                saveToLocalStorage();
+                renderMultiColumn();
+            }
+        }
+
+        function updateAnalysis(filteredData) {
+            document.getElementById('totalSaham').textContent = filteredData.length;
+            document.getElementById('activeStrategi').textContent = new Set(filteredData.map(item => item.strategi)).size;
+            document.getElementById('highPriority').textContent = filteredData.filter(item => item.priority === 'high').length;
+            document.getElementById('avgTimeframe').textContent = 'N/A';
+        }
+
+        function deleteStock(id) { 
+            if (confirm('Yakin menghapus saham ini?')) { 
+                wishlistData = wishlistData.filter(item => item.id !== id); 
+                saveToLocalStorage(); 
+                renderMultiColumn(); 
+            } 
+        }
+
+        function changePriority(id) { 
+            const item = wishlistData.find(item => item.id === id); 
+            if (item) { 
+                item.priority = { 'low': 'medium', 'medium': 'high', 'high': 'low' }[item.priority]; 
+                saveToLocalStorage(); 
+                renderMultiColumn(); 
+            } 
+        }
+
+        document.getElementById('addStockBtn').addEventListener('click', function() {
+            const name = document.getElementById('newStockName').value.trim().toUpperCase();
+            const strategy = selectedStrategy;
+            const timeframe = selectedTimeframe;
+            
+            if (!name || !strategy) { 
+                alert('Pilih strategi dan masukkan kode saham!'); 
+                return; 
+            }
+            
+            // Validasi: Saham dan strategi sama BOLEH, asalkan timeframe berbeda
+            if (wishlistData.some(item => item.nama === name && item.strategi === strategy && item.timeframe === timeframe)) { 
+                alert('Kombinasi saham, strategi, dan timeframe sudah ada!'); 
+                return; 
+            }
+            
+            const newId = wishlistData.length > 0 ? Math.max(...wishlistData.map(item => item.id)) + 1 : 1;
+            wishlistData.unshift({ 
+                id: newId, 
+                nama: name, 
+                strategi: strategy, 
+                timeframe: timeframe, 
+                priority: "low", 
+                ma50: "ya", 
+                link: `https://www.tradingview.com/chart/?symbol=IDX:${name}` 
+            });
+            
+            document.getElementById('newStockName').value = '';
+            renderMultiColumn(); 
+            saveToLocalStorage();
+        });
+
+        function renderStrategyButtons() {
+            updateStrategySelect();
+        }
+
+        function setupAutocomplete() {
+            const nameInput = document.getElementById('newStockName');
+            nameInput.addEventListener('input', function() {
+                const val = this.value.toUpperCase(); 
+                closeAllLists();
+                if (!val) return;
+                
+                const list = document.createElement('div'); 
+                list.setAttribute('id', this.id + '-autocomplete-list'); 
+                list.setAttribute('class', 'autocomplete-items'); 
+                this.parentNode.appendChild(list);
+                
+                let count = 0; 
+                for (let i = 0; i < stockCodes.length; i++) { 
+                    if (stockCodes[i].substr(0, val.length).toUpperCase() === val) { 
+                        count++; 
+                        if (count > 8) break; 
+                        const item = document.createElement('div'); 
+                        item.innerHTML = '<strong>' + stockCodes[i].substr(0, val.length) + '</strong>' + stockCodes[i].substr(val.length) + '<input type="hidden" value="' + stockCodes[i] + '">'; 
+                        item.addEventListener('click', function() { 
+                            nameInput.value = this.getElementsByTagName('input')[0].value; 
+                            closeAllLists(); 
+                        }); 
+                        list.appendChild(item); 
+                    } 
+                }
+            });
+            
+            function closeAllLists(elmnt) { 
+                const items = document.getElementsByClassName('autocomplete-items'); 
+                for (let i = 0; i < items.length; i++) {
+                    if (elmnt !== items[i] && elmnt !== nameInput) {
+                        items[i].parentNode.removeChild(items[i]);
+                    }
+                }
+            }
+            
+            document.addEventListener('click', function(e) { 
+                closeAllLists(e.target); 
+            });
+        }
+
+        function setupFilters() {
+            document.getElementById('searchInput').addEventListener('input', function() { 
+                currentFilters.search = this.value; 
+                renderMultiColumn(); 
+            });
+            
+            document.querySelectorAll('.filter-btn').forEach(btn => 
+                btn.addEventListener('click', function() { 
+                    const priority = this.getAttribute('data-priority'); 
+                    currentFilters.priority = currentFilters.priority === priority ? '' : priority; 
+                    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active')); 
+                    if (currentFilters.priority) this.classList.add('active'); 
+                    renderMultiColumn(); 
+                })
+            );
+            
+            document.getElementById('clearFilters').addEventListener('click', function() { 
+                currentFilters = { search: "", timeframe: "", priority: "" }; 
+                document.getElementById('searchInput').value = ''; 
+                document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active')); 
+                renderMultiColumn(); 
+            });
+        }
+
+        // Strategy Management
+        function renderStrategyList() {
+            const strategyList = document.getElementById('strategyList');
+            strategyList.innerHTML = '';
+            
+            strategiOptions.forEach(strategy => {
+                const div = document.createElement('div');
+                div.style.padding = '4px';
+                div.style.borderBottom = '1px solid #eee';
+                div.textContent = strategy;
+                strategyList.appendChild(div);
+            });
+        }
+
+        function renderDeleteStrategyList() {
+            const deleteStrategyList = document.getElementById('deleteStrategyList');
+            deleteStrategyList.innerHTML = '';
+            
+            strategiOptions.forEach(strategy => {
+                const div = document.createElement('div');
+                div.style.display = 'flex';
+                div.style.alignItems = 'center';
+                div.style.marginBottom = '4px';
+                
+                const radio = document.createElement('input');
+                radio.type = 'radio';
+                radio.name = 'strategyToDelete';
+                radio.value = strategy;
+                radio.style.marginRight = '8px';
+                
+                const label = document.createElement('label');
+                label.textContent = strategy;
+                label.style.flex = '1';
+                
+                div.appendChild(radio);
+                div.appendChild(label);
+                deleteStrategyList.appendChild(div);
+            });
+        }
+
+        document.getElementById('manageStrategyBtn').addEventListener('click', function() {
+            renderStrategyList();
+            document.getElementById('manageStrategyModal').style.display = 'block';
+        });
+
+        document.getElementById('addStrategyBtn').addEventListener('click', function() {
+            const newStrategy = document.getElementById('newStrategyName').value.trim();
+            if (newStrategy && !strategiOptions.includes(newStrategy)) {
+                strategiOptions.push(newStrategy);
+                saveStrategiOptions();
+                renderStrategyList();
+                renderStrategyButtons();
+                document.getElementById('newStrategyName').value = '';
+                alert('Strategi berhasil ditambahkan!');
+            } else if (strategiOptions.includes(newStrategy)) {
+                alert('Strategi sudah ada!');
+            }
+        });
+
+        document.getElementById('deleteStrategyBtn').addEventListener('click', function() {
+            renderDeleteStrategyList();
+            document.getElementById('deleteStrategyModal').style.display = 'block';
+        });
+
+        document.getElementById('confirmDeleteStrategy').addEventListener('click', function() {
+            const pin = document.getElementById('deleteStrategyPin').value;
+            const selected = document.querySelector('input[name="strategyToDelete"]:checked');
+            
+            if (!selected) {
+                alert('Pilih strategi yang akan dihapus!');
+                return;
+            }
+            
+            if (pin !== DEFAULT_PIN) {
+                alert('PIN salah!');
+                return;
+            }
+            
+            const strategyToDelete = selected.value;
+            
+            // Hapus strategi dari daftar
+            strategiOptions = strategiOptions.filter(s => s !== strategyToDelete);
+            
+            // Hapus semua saham dengan strategi tersebut
+            wishlistData = wishlistData.filter(item => item.strategi !== strategyToDelete);
+            
+            saveStrategiOptions();
+            saveToLocalStorage();
+            renderStrategyList();
+            renderStrategyButtons();
+            renderMultiColumn();
+            
+            document.getElementById('deleteStrategyModal').style.display = 'none';
+            document.getElementById('deleteStrategyPin').value = '';
+            
+            alert('Strategi berhasil dihapus!');
+        });
+
+        document.getElementById('cancelDeleteStrategy').addEventListener('click', function() {
+            document.getElementById('deleteStrategyModal').style.display = 'none';
+            document.getElementById('deleteStrategyPin').value = '';
+        });
+
+        document.getElementById('cancelManageStrategy').addEventListener('click', function() {
+            document.getElementById('manageStrategyModal').style.display = 'none';
+        });
+
+        document.getElementById('exportBtn').addEventListener('click', function() { 
+            const dataStr = JSON.stringify(wishlistData, null, 2); 
+            const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr); 
+            const linkElement = document.createElement('a'); 
+            linkElement.setAttribute('href', dataUri); 
+            linkElement.setAttribute('download', 'stock-wishlist.json'); 
+            linkElement.click(); 
+        });
+        
+        document.getElementById('importBtn').addEventListener('click', function() { 
+            document.getElementById('importFile').click(); 
+        });
+        
+        document.getElementById('importFile').addEventListener('change', function(e) { 
+            const file = e.target.files[0]; 
+            if (!file) return; 
+            const reader = new FileReader(); 
+            reader.onload = function(e) { 
+                try { 
+                    const importedData = JSON.parse(e.target.result); 
+                    if (Array.isArray(importedData) && confirm('Import data akan menggantikan data saat ini. Lanjutkan?')) { 
+                        wishlistData = importedData; 
+                        renderMultiColumn(); 
+                        saveToLocalStorage(); 
+                        alert('Data berhasil diimport!'); 
+                    } else alert('Format file tidak valid!'); 
+                } catch (error) { 
+                    alert('Error membaca file: ' + error.message); 
+                } 
+            }; 
+            reader.readAsText(file); 
+            e.target.value = ''; 
+        });
+
+        function saveToLocalStorage() { 
+            localStorage.setItem('wishlistSaham', JSON.stringify(wishlistData)); 
+        }
+        
+        function loadFromLocalStorage() { 
+            const savedData = localStorage.getItem('wishlistSaham'); 
+            if (savedData) wishlistData = JSON.parse(savedData); 
+        }
+
+        function setupResetWithPin() {
+            const resetModal = document.getElementById('resetModal'); 
+            const pinInput = document.getElementById('pinInput'); 
+            const cancelReset = document.getElementById('cancelReset'); 
+            const confirmReset = document.getElementById('confirmReset'); 
+            
+            document.getElementById('resetBtn').addEventListener('click', function() { 
+                resetModal.style.display = 'block'; 
+                pinInput.value = ''; 
+            });
+            
+            cancelReset.addEventListener('click', function() { 
+                resetModal.style.display = 'none'; 
+            });
+            
+            confirmReset.addEventListener('click', function() { 
+                if (pinInput.value === DEFAULT_PIN) { 
+                    // Reset to only 1 data sample
+                    wishlistData = [{ 
+                        id: 1, 
+                        nama: "ANTM", 
+                        strategi: "NR47", 
+                        timeframe: "15m", 
+                        priority: "low", 
+                        ma50: "ya", 
+                        link: "https://www.tradingview.com/chart/?symbol=IDX:ANTM" 
+                    }]; 
+                    
+                    strategiOptions = ["NR47", "HidBulDiv", "BulDiv", "SMC w/ TP", "RBR", "Quasimodo", "ChocH/Bos", "BozzTrade"]; 
+                    saveStrategiOptions(); 
+                    updateStrategySelect(); 
+                    currentFilters = { search: "", timeframe: "", priority: "" }; 
+                    document.getElementById('searchInput').value = ''; 
+                    document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active')); 
+                    renderMultiColumn(); 
+                    saveToLocalStorage(); 
+                    resetModal.style.display = 'none'; 
+                    alert('Data berhasil direset!'); 
+                } else { 
+                    alert('PIN salah! Data tidak direset.'); 
+                    pinInput.value = ''; 
+                } 
+            });
+            
+            resetModal.addEventListener('click', function(e) { 
+                if (e.target === resetModal) resetModal.style.display = 'none'; 
+            });
+        }
+
+        // Accordion functionality
+        function setupAccordion() {
+            const accordionHeaders = document.querySelectorAll('.accordion-header');
+            
+            accordionHeaders.forEach(header => {
+                header.addEventListener('click', function() {
+                    this.classList.toggle('active');
+                    const content = this.nextElementSibling;
+                    
+                    if (content.style.maxHeight) {
+                        content.style.maxHeight = null;
+                    } else {
+                        content.style.maxHeight = content.scrollHeight + "px";
+                    }
+                });
+            });
+        }
+
+        // Initialize the app
+        loadStrategiOptions(); 
+        updateStrategySelect();
+        renderTimeframeButtons();
+        loadFromLocalStorage(); 
+        renderMultiColumn(); 
+        setupAutocomplete(); 
+        setupFilters(); 
+        setupResetWithPin();
+        setupAccordion();
+        
+        // Set default selections
+        if (strategiOptions.length > 0) {
+            selectedStrategy = strategiOptions[0];
+            renderStrategyButtons();
+        }
+    </script>
+</body>
+</html>
