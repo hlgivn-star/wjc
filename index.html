@@ -328,6 +328,117 @@
             border-radius: 8px;
             background: white;
         }
+
+        /* Import Section */
+        .import-section {
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 40px;
+            border: 1px solid rgba(99, 102, 241, 0.3);
+        }
+
+        .import-actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .import-btn {
+            background: linear-gradient(135deg, var(--warning), var(--warning));
+            color: white;
+            border: none;
+            padding: 15px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .import-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(245, 158, 11, 0.4);
+        }
+
+        .import-input {
+            display: none;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 2000;
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 20px;
+            border: 1px solid rgba(99, 102, 241, 0.3);
+            max-width: 500px;
+            width: 90%;
+            text-align: center;
+        }
+
+        .modal-title {
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+            color: var(--light);
+        }
+
+        .modal-text {
+            color: #94a3b8;
+            margin-bottom: 25px;
+            line-height: 1.6;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
+
+        .modal-btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            flex: 1;
+        }
+
+        .modal-btn.confirm {
+            background: linear-gradient(135deg, var(--success), #0da271);
+            color: white;
+        }
+
+        .modal-btn.cancel {
+            background: rgba(30, 41, 59, 0.6);
+            color: var(--light);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .modal-btn:hover {
+            transform: translateY(-2px);
+        }
         
         /* Responsive Design */
         @media (max-width: 768px) {
@@ -345,6 +456,14 @@
             
             .actions-grid {
                 grid-template-columns: 1fr 1fr;
+            }
+
+            .import-actions {
+                grid-template-columns: 1fr;
+            }
+
+            .modal-buttons {
+                flex-direction: column;
             }
         }
         
@@ -406,6 +525,14 @@
         
         .notification.info {
             background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+        }
+
+        .notification.warning {
+            background: linear-gradient(135deg, var(--warning), #d97706);
+        }
+
+        .notification.error {
+            background: linear-gradient(135deg, var(--danger), #dc2626);
         }
     </style>
 </head>
@@ -520,6 +647,28 @@
                 </div>
             </div>
         </section>
+
+        <!-- Import Data Section -->
+        <section class="import-section">
+            <h2 class="section-title">
+                <i class='bx bx-upload'></i>
+                Restore Data
+            </h2>
+            <p style="color: #94a3b8; margin-bottom: 20px; text-align: center;">
+                Import data backup untuk restore semua data trading Anda
+            </p>
+            <div class="import-actions">
+                <button class="import-btn" onclick="document.getElementById('importFile').click()">
+                    <i class='bx bx-upload'></i>
+                    Pilih File Backup
+                </button>
+                <button class="import-btn" onclick="showImportModal()">
+                    <i class='bx bx-reset'></i>
+                    Reset Semua Data
+                </button>
+            </div>
+            <input type="file" id="importFile" class="import-input" accept=".json" onchange="importAllData(this.files[0])">
+        </section>
         
         <footer class="dashboard-footer">
             <p>Trading Tools Suite &copy; 2024 - Professional Trading Tools for Indonesian Traders</p>
@@ -537,6 +686,34 @@
         </div>
         <div class="app-content">
             <iframe class="app-iframe" id="appFrame" src="about:blank"></iframe>
+        </div>
+    </div>
+
+    <!-- Import Confirmation Modal -->
+    <div class="modal" id="importModal">
+        <div class="modal-content">
+            <h3 class="modal-title">Konfirmasi Import Data</h3>
+            <p class="modal-text" id="modalMessage">
+                Data yang diimport akan menggantikan semua data yang ada saat ini. Apakah Anda yakin?
+            </p>
+            <div class="modal-buttons">
+                <button class="modal-btn cancel" onclick="closeModal()">Batal</button>
+                <button class="modal-btn confirm" onclick="confirmImport()">Ya, Import Data</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Reset Confirmation Modal -->
+    <div class="modal" id="resetModal">
+        <div class="modal-content">
+            <h3 class="modal-title">Konfirmasi Reset Data</h3>
+            <p class="modal-text">
+                Semua data akan dihapus permanen. Tindakan ini tidak dapat dibatalkan. Apakah Anda yakin?
+            </p>
+            <div class="modal-buttons">
+                <button class="modal-btn cancel" onclick="closeModal()">Batal</button>
+                <button class="modal-btn confirm" onclick="confirmReset()">Ya, Reset Semua</button>
+            </div>
         </div>
     </div>
     
@@ -565,6 +742,7 @@
 
         // Global state
         let currentApp = null;
+        let pendingImportFile = null;
 
         // DOM Elements
         const dashboard = document.getElementById('dashboard');
@@ -572,6 +750,8 @@
         const appFrame = document.getElementById('appFrame');
         const appTitle = document.getElementById('appTitle');
         const notification = document.getElementById('notification');
+        const importModal = document.getElementById('importModal');
+        const resetModal = document.getElementById('resetModal');
 
         // Statistics elements
         const totalTradesEl = document.getElementById('totalTrades');
@@ -690,10 +870,117 @@
             }
         }
 
-        // Import data (for future implementation)
-        function importData(file) {
-            // Implementation for importing data from file
-            console.log('Import data functionality would be implemented here');
+        // Import all data
+        function importAllData(file) {
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const importData = JSON.parse(e.target.result);
+                    
+                    // Validate import data structure
+                    if (!importData.wishlist || !importData.journal || !importData.calculator) {
+                        showNotification('Format file backup tidak valid', 'error');
+                        return;
+                    }
+                    
+                    pendingImportFile = importData;
+                    showImportModal();
+                    
+                } catch (error) {
+                    console.error('Import error:', error);
+                    showNotification('Error membaca file backup', 'error');
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        // Show import confirmation modal
+        function showImportModal() {
+            const modal = document.getElementById('importModal');
+            const message = document.getElementById('modalMessage');
+            
+            if (pendingImportFile) {
+                const wishlistCount = pendingImportFile.wishlist.length;
+                const journalCount = pendingImportFile.journal.length;
+                const calculatorCount = pendingImportFile.calculator.buyTransactions.length + 
+                                      pendingImportFile.calculator.sellTransactions.length;
+                
+                message.innerHTML = `
+                    Data yang akan diimport:<br>
+                    • ${wishlistCount} saham wishlist<br>
+                    • ${journalCount} entri trading journal<br>
+                    • ${calculatorCount} transaksi calculator<br><br>
+                    Data saat ini akan digantikan. Lanjutkan?
+                `;
+            }
+            
+            modal.style.display = 'block';
+        }
+
+        // Confirm import
+        function confirmImport() {
+            if (!pendingImportFile) {
+                closeModal();
+                return;
+            }
+            
+            try {
+                // Save imported data to localStorage
+                localStorage.setItem('wishlistSaham', JSON.stringify(pendingImportFile.wishlist));
+                localStorage.setItem('tradingJournal', JSON.stringify(pendingImportFile.journal));
+                localStorage.setItem('buyTransactions', JSON.stringify(pendingImportFile.calculator.buyTransactions));
+                localStorage.setItem('sellTransactions', JSON.stringify(pendingImportFile.calculator.sellTransactions));
+                
+                // Update statistics
+                updateStatistics();
+                
+                showNotification('Data berhasil diimport!', 'success');
+                closeModal();
+                
+                // Clear file input
+                document.getElementById('importFile').value = '';
+                pendingImportFile = null;
+                
+            } catch (error) {
+                console.error('Import confirmation error:', error);
+                showNotification('Error mengimport data', 'error');
+            }
+        }
+
+        // Show reset modal
+        function showResetModal() {
+            resetModal.style.display = 'block';
+        }
+
+        // Confirm reset all data
+        function confirmReset() {
+            try {
+                // Clear all localStorage data
+                localStorage.removeItem('wishlistSaham');
+                localStorage.removeItem('tradingJournal');
+                localStorage.removeItem('buyTransactions');
+                localStorage.removeItem('sellTransactions');
+                localStorage.removeItem('lastOpenedApp');
+                
+                // Update statistics
+                updateStatistics();
+                
+                showNotification('Semua data berhasil direset!', 'success');
+                closeModal();
+                
+            } catch (error) {
+                console.error('Reset error:', error);
+                showNotification('Error mereset data', 'error');
+            }
+        }
+
+        // Close modal
+        function closeModal() {
+            importModal.style.display = 'none';
+            resetModal.style.display = 'none';
+            pendingImportFile = null;
         }
 
         // Show notification
@@ -703,7 +990,7 @@
             
             setTimeout(() => {
                 notification.classList.remove('show');
-            }, 3000);
+            }, 4000);
         }
 
         // Load user preferences
@@ -742,6 +1029,16 @@
                         closeApp();
                         break;
                 }
+            }
+        });
+
+        // Close modal when clicking outside
+        window.addEventListener('click', function(e) {
+            if (e.target === importModal) {
+                closeModal();
+            }
+            if (e.target === resetModal) {
+                closeModal();
             }
         });
 
