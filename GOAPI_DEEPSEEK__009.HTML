@@ -1,0 +1,1703 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Screener Saham - Multi Indikator Teknikal</title>
+    <style>
+        :root {
+            --primary-color: #1e3a8a;
+            --secondary-color: #3b82f6;
+            --positive-color: #10b981;
+            --negative-color: #ef4444;
+            --warning-color: #f59e0b;
+            --neutral-color: #6b7280;
+            --background-color: #f8fafc;
+            --header-color: #1e40af;
+            --border-color: #e5e7eb;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        }
+        
+        body {
+            background-color: var(--background-color);
+            color: #1f2937;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 24px;
+            padding: 20px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        h1 {
+            color: var(--primary-color);
+            margin-bottom: 8px;
+            font-size: 28px;
+        }
+        
+        .subtitle {
+            color: var(--neutral-color);
+            font-size: 16px;
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 15px;
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+        
+        .search-box {
+            flex-grow: 1;
+            max-width: 300px;
+            position: relative;
+        }
+        
+        .search-box i {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--neutral-color);
+        }
+        
+        input[type="text"] {
+            width: 100%;
+            padding: 10px 15px 10px 40px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        
+        input[type="text"]:focus {
+            outline: none;
+            border-color: var(--secondary-color);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+        
+        .add-stock-section {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        
+        .add-stock-input {
+            width: 120px;
+            padding: 10px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 14px;
+            text-transform: uppercase;
+        }
+        
+        .add-btn {
+            background-color: var(--positive-color);
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: background-color 0.3s;
+        }
+        
+        .add-btn:hover {
+            background-color: #0da271;
+        }
+        
+        .add-btn:disabled {
+            background-color: var(--neutral-color);
+            cursor: not-allowed;
+        }
+        
+        .refresh-btn {
+            background-color: var(--secondary-color);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: background-color 0.3s;
+        }
+        
+        .refresh-btn:hover {
+            background-color: var(--primary-color);
+        }
+        
+        .refresh-btn:disabled {
+            background-color: var(--neutral-color);
+            cursor: not-allowed;
+        }
+        
+        .last-update {
+            color: var(--neutral-color);
+            font-size: 14px;
+        }
+        
+        .status {
+            margin-bottom: 20px;
+            padding: 12px 16px;
+            border-radius: 6px;
+            text-align: center;
+            font-weight: 500;
+        }
+        
+        .status.loading {
+            background-color: #fef3c7;
+            color: #d97706;
+            border: 1px solid #fcd34d;
+        }
+        
+        .status.error {
+            background-color: #fee2e2;
+            color: var(--negative-color);
+            border: 1px solid #fecaca;
+        }
+        
+        .status.success {
+            background-color: #d1fae5;
+            color: var(--positive-color);
+            border: 1px solid #a7f3d0;
+        }
+        
+        .status.warning {
+            background-color: #fef3c7;
+            color: #d97706;
+            border: 1px solid #fcd34d;
+        }
+        
+        .table-container {
+            background-color: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            margin-bottom: 30px;
+            overflow-x: auto;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 1200px;
+        }
+        
+        thead {
+            background-color: var(--header-color);
+            color: white;
+        }
+        
+        th {
+            padding: 12px 10px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            cursor: pointer;
+            user-select: none;
+            position: relative;
+        }
+        
+        th:hover {
+            background-color: #1e3a8a;
+        }
+        
+        th.sort-asc::after {
+            content: " ▲";
+            font-size: 10px;
+        }
+        
+        th.sort-desc::after {
+            content: " ▼";
+            font-size: 10px;
+        }
+        
+        tbody tr {
+            border-bottom: 1px solid var(--border-color);
+            transition: background-color 0.2s;
+        }
+        
+        tbody tr:hover {
+            background-color: #f3f4f6;
+        }
+        
+        td {
+            padding: 12px 10px;
+            font-size: 13px;
+        }
+        
+        .symbol {
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+        
+        .price {
+            font-weight: 600;
+            font-size: 14px;
+        }
+        
+        .volume {
+            font-family: 'Courier New', monospace;
+        }
+        
+        .indicator-value {
+            font-weight: 600;
+            text-align: center;
+            padding: 3px 6px;
+            border-radius: 3px;
+            font-size: 12px;
+        }
+        
+        .rsi-overbought {
+            background-color: rgba(239, 68, 68, 0.1);
+            color: var(--negative-color);
+        }
+        
+        .rsi-oversold {
+            background-color: rgba(16, 185, 129, 0.1);
+            color: var(--positive-color);
+        }
+        
+        .rsi-neutral {
+            background-color: rgba(107, 114, 128, 0.1);
+            color: var(--neutral-color);
+        }
+        
+        .stoch-overbought {
+            background-color: rgba(239, 68, 68, 0.1);
+            color: var(--negative-color);
+        }
+        
+        .stoch-oversold {
+            background-color: rgba(16, 185, 129, 0.1);
+            color: var(--positive-color);
+        }
+        
+        .stoch-neutral {
+            background-color: rgba(107, 114, 128, 0.1);
+            color: var(--neutral-color);
+        }
+        
+        .adx-strong {
+            background-color: rgba(16, 185, 129, 0.1);
+            color: var(--positive-color);
+        }
+        
+        .adx-weak {
+            background-color: rgba(107, 114, 128, 0.1);
+            color: var(--neutral-color);
+        }
+        
+        .data-unavailable {
+            color: var(--neutral-color);
+            font-style: italic;
+        }
+        
+        .data-source {
+            font-size: 10px;
+            color: var(--neutral-color);
+            margin-left: 3px;
+        }
+        
+        .data-source.goapi {
+            color: var(--positive-color);
+        }
+        
+        .data-source.yahoo {
+            color: var(--warning-color);
+        }
+        
+        .delete-btn {
+            background: none;
+            border: none;
+            color: var(--negative-color);
+            cursor: pointer;
+            font-size: 16px;
+            padding: 5px;
+            border-radius: 4px;
+            transition: background-color 0.2s;
+        }
+        
+        .delete-btn:hover {
+            background-color: rgba(239, 68, 68, 0.1);
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border-color);
+            color: var(--neutral-color);
+            font-size: 14px;
+        }
+        
+        .legend {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 12px;
+        }
+        
+        .legend-color {
+            width: 12px;
+            height: 12px;
+            border-radius: 2px;
+        }
+        
+        .quota-info {
+            text-align: center;
+            margin-bottom: 10px;
+            color: var(--neutral-color);
+            font-size: 14px;
+        }
+        
+        .indicators-info {
+            text-align: center;
+            margin-bottom: 10px;
+            color: var(--neutral-color);
+            font-size: 12px;
+        }
+        
+        .stock-count {
+            text-align: center;
+            margin-bottom: 10px;
+            color: var(--neutral-color);
+            font-size: 14px;
+        }
+        
+        @media (max-width: 768px) {
+            .controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .search-box {
+                max-width: 100%;
+            }
+            
+            .add-stock-section {
+                flex-direction: column;
+                width: 100%;
+            }
+            
+            .add-stock-input {
+                width: 100%;
+            }
+            
+            th, td {
+                padding: 8px 6px;
+            }
+            
+            h1 {
+                font-size: 24px;
+            }
+        }
+        
+        /* Loading animation */
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+        
+        .loading-row td {
+            animation: pulse 1.5s infinite;
+        }
+        
+        .loading-row .price, .loading-row .volume {
+            background-color: #e5e7eb;
+            height: 16px;
+            border-radius: 4px;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .modal-content {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        }
+        
+        .modal h3 {
+            margin-bottom: 15px;
+            color: var(--primary-color);
+        }
+        
+        .modal p {
+            margin-bottom: 15px;
+            line-height: 1.5;
+        }
+        
+        .modal-buttons {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .modal-btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+        }
+        
+        .modal-btn.confirm {
+            background-color: var(--negative-color);
+            color: white;
+        }
+        
+        .modal-btn.cancel {
+            background-color: var(--neutral-color);
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Screener Saham - Multi Indikator Teknikal</h1>
+            <p class="subtitle">Data real-time dari GOAPI dengan Web Worker untuk kalkulasi indikator</p>
+        </header>
+        
+        <div class="controls">
+            <div class="search-box">
+                <i>🔍</i>
+                <input type="text" id="searchInput" placeholder="Cari kode saham...">
+            </div>
+            
+            <div class="add-stock-section">
+                <input type="text" id="newStockCode" class="add-stock-input" placeholder="Kode (BBCA)" maxlength="4">
+                <button id="addStockBtn" class="add-btn">Tambah Saham</button>
+            </div>
+            
+            <button id="refreshBtn" class="refresh-btn">
+                <span>Refresh Data</span>
+                <span>↻</span>
+            </button>
+            
+            <div class="last-update">
+                Terakhir diperbarui: <span id="lastUpdate">-</span>
+            </div>
+        </div>
+        
+        <div class="quota-info" id="quotaInfo">
+            GOAPI Quota: <span id="quotaUsed">0</span>/200 requests hari ini
+        </div>
+        
+        <div class="stock-count" id="stockCount">
+            Jumlah saham dalam pemantauan: <span id="stockCountValue">10</span>
+        </div>
+        
+        <div class="indicators-info">
+            Indikator: RSI(14) | Stochastic(12,5,5) | ADX(14) | Volume MA(20)
+        </div>
+        
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-color" style="background-color: rgba(16, 185, 129, 0.1);"></div>
+                <span>RSI ≤ 30 / Stochastic ≤ 20 (Oversold)</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background-color: rgba(107, 114, 128, 0.1);"></div>
+                <span>Netral</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background-color: rgba(239, 68, 68, 0.1);"></div>
+                <span>RSI ≥ 70 / Stochastic ≥ 80 (Overbought)</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background-color: rgba(16, 185, 129, 0.1);"></div>
+                <span>ADX ≥ 25 (Trend Kuat)</span>
+            </div>
+        </div>
+        
+        <div id="status" class="status"></div>
+        
+        <div class="table-container">
+            <table id="stocksTable">
+                <thead>
+                    <tr>
+                        <th data-sort="code" class="sort-asc">Kode</th>
+                        <th data-sort="price">Harga</th>
+                        <th data-sort="volume">Volume</th>
+                        <th data-sort="rsi">RSI (14)</th>
+                        <th data-sort="stochK">Stoch %K</th>
+                        <th data-sort="stochD">Stoch %D</th>
+                        <th data-sort="adx">ADX (14)</th>
+                        <th data-sort="plusDI">+DI</th>
+                        <th data-sort="minusDI">-DI</th>
+                        <th data-sort="volumeMA20">Vol MA20</th>
+                        <th>Aksi</th>
+                    </tr>
+                </thead>
+                <tbody id="stocksTableBody">
+                    <!-- Data saham akan dimasukkan di sini oleh JavaScript -->
+                </tbody>
+            </table>
+        </div>
+        
+        <footer>
+            <p>Data real-time dari GOAPI, data historis dari Yahoo Finance. Hanya untuk tujuan edukasi.</p>
+            <p>Performa lampau tidak menjamin hasil di masa depan. Investasi mengandung risiko.</p>
+        </footer>
+    </div>
+
+    <!-- Modal Konfirmasi Hapus -->
+    <div id="deleteModal" class="modal">
+        <div class="modal-content">
+            <h3>Hapus Saham</h3>
+            <p>Anda yakin ingin menghapus <strong id="deleteStockName"></strong> dari daftar pemantauan?</p>
+            <div class="modal-buttons">
+                <button id="confirmDeleteBtn" class="modal-btn confirm">Hapus</button>
+                <button id="cancelDeleteBtn" class="modal-btn cancel">Batal</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Web Worker Script -->
+    <script id="workerScript" type="javascript/worker">
+        // Fungsi untuk menghitung RSI
+        function calculateRSI(closingPrices, period = 14) {
+            if (!closingPrices || closingPrices.length < period + 1) {
+                return null;
+            }
+            
+            let gains = [];
+            let losses = [];
+            
+            for (let i = 1; i < closingPrices.length; i++) {
+                const change = closingPrices[i] - closingPrices[i-1];
+                gains.push(change >= 0 ? change : 0);
+                losses.push(change < 0 ? Math.abs(change) : 0);
+            }
+            
+            let avgGain = 0;
+            let avgLoss = 0;
+            
+            for (let i = 0; i < period; i++) {
+                avgGain += gains[i];
+                avgLoss += losses[i];
+            }
+            
+            avgGain = avgGain / period;
+            avgLoss = avgLoss / period;
+            
+            if (avgLoss === 0) return 100;
+            let rs = avgGain / avgLoss;
+            let rsi = 100 - (100 / (1 + rs));
+            
+            for (let i = period; i < gains.length; i++) {
+                avgGain = ((avgGain * (period - 1)) + gains[i]) / period;
+                avgLoss = ((avgLoss * (period - 1)) + losses[i]) / period;
+                
+                if (avgLoss === 0) {
+                    rsi = 100;
+                } else {
+                    rs = avgGain / avgLoss;
+                    rsi = 100 - (100 / (1 + rs));
+                }
+            }
+            
+            return Math.round(rsi * 100) / 100;
+        }
+
+        // Fungsi untuk menghitung Stochastic Oscillator
+        function calculateStochastic(highs, lows, closes, kPeriod = 12, dPeriod = 5) {
+            if (!highs || !lows || !closes || closes.length < kPeriod) {
+                return { k: null, d: null };
+            }
+            
+            const kValues = [];
+            
+            for (let i = kPeriod - 1; i < closes.length; i++) {
+                const periodHigh = Math.max(...highs.slice(i - kPeriod + 1, i + 1));
+                const periodLow = Math.min(...lows.slice(i - kPeriod + 1, i + 1));
+                
+                if (periodHigh === periodLow) {
+                    kValues.push(50); // Netral jika high dan low sama
+                } else {
+                    const k = ((closes[i] - periodLow) / (periodHigh - periodLow)) * 100;
+                    kValues.push(k);
+                }
+            }
+            
+            // Hitung %D (SMA dari %K)
+            const dValues = [];
+            for (let i = dPeriod - 1; i < kValues.length; i++) {
+                const d = kValues.slice(i - dPeriod + 1, i + 1).reduce((a, b) => a + b, 0) / dPeriod;
+                dValues.push(d);
+            }
+            
+            const latestK = kValues.length > 0 ? Math.round(kValues[kValues.length - 1] * 100) / 100 : null;
+            const latestD = dValues.length > 0 ? Math.round(dValues[dValues.length - 1] * 100) / 100 : null;
+            
+            return { k: latestK, d: latestD };
+        }
+
+        // Fungsi untuk menghitung ADX (Average Directional Index)
+        function calculateADX(highs, lows, closes, period = 14) {
+            if (!highs || !lows || !closes || closes.length < period * 2) {
+                return { adx: null, plusDI: null, minusDI: null };
+            }
+            
+            // Hitung True Range (TR), +DM, -DM
+            const trValues = [];
+            const plusDMValues = [];
+            const minusDMValues = [];
+            
+            for (let i = 1; i < highs.length; i++) {
+                const tr = Math.max(
+                    highs[i] - lows[i],
+                    Math.abs(highs[i] - closes[i-1]),
+                    Math.abs(lows[i] - closes[i-1])
+                );
+                trValues.push(tr);
+                
+                const upMove = highs[i] - highs[i-1];
+                const downMove = lows[i-1] - lows[i];
+                
+                if (upMove > downMove && upMove > 0) {
+                    plusDMValues.push(upMove);
+                } else {
+                    plusDMValues.push(0);
+                }
+                
+                if (downMove > upMove && downMove > 0) {
+                    minusDMValues.push(downMove);
+                } else {
+                    minusDMValues.push(0);
+                }
+            }
+            
+            // Smoothing TR, +DM, -DM menggunakan Wilder's smoothing
+            let smoothedTR = trValues.slice(0, period).reduce((a, b) => a + b, 0) / period;
+            let smoothedPlusDM = plusDMValues.slice(0, period).reduce((a, b) => a + b, 0) / period;
+            let smoothedMinusDM = minusDMValues.slice(0, period).reduce((a, b) => a + b, 0) / period;
+            
+            const plusDIValues = [(smoothedPlusDM / smoothedTR) * 100];
+            const minusDIValues = [(smoothedMinusDM / smoothedTR) * 100];
+            
+            for (let i = period; i < trValues.length; i++) {
+                smoothedTR = (smoothedTR * (period - 1) + trValues[i]) / period;
+                smoothedPlusDM = (smoothedPlusDM * (period - 1) + plusDMValues[i]) / period;
+                smoothedMinusDM = (smoothedMinusDM * (period - 1) + minusDMValues[i]) / period;
+                
+                plusDIValues.push((smoothedPlusDM / smoothedTR) * 100);
+                minusDIValues.push((smoothedMinusDM / smoothedTR) * 100);
+            }
+            
+            // Hitung DX dan ADX
+            const dxValues = [];
+            for (let i = 0; i < plusDIValues.length; i++) {
+                const diDiff = Math.abs(plusDIValues[i] - minusDIValues[i]);
+                const diSum = plusDIValues[i] + minusDIValues[i];
+                dxValues.push((diDiff / diSum) * 100);
+            }
+            
+            // ADX adalah EMA dari DX
+            let adx = dxValues.slice(0, period).reduce((a, b) => a + b, 0) / period;
+            for (let i = period; i < dxValues.length; i++) {
+                adx = (adx * (period - 1) + dxValues[i]) / period;
+            }
+            
+            const latestPlusDI = plusDIValues.length > 0 ? Math.round(plusDIValues[plusDIValues.length - 1] * 100) / 100 : null;
+            const latestMinusDI = minusDIValues.length > 0 ? Math.round(minusDIValues[minusDIValues.length - 1] * 100) / 100 : null;
+            const latestADX = Math.round(adx * 100) / 100;
+            
+            return { 
+                adx: latestADX, 
+                plusDI: latestPlusDI, 
+                minusDI: latestMinusDI 
+            };
+        }
+
+        // Fungsi untuk menghitung Volume Moving Average
+        function calculateVolumeMA(volumes, period = 20) {
+            if (!volumes || volumes.length < period) {
+                return null;
+            }
+            
+            const sum = volumes.slice(-period).reduce((a, b) => a + b, 0);
+            return Math.round(sum / period);
+        }
+
+        // Handler untuk pesan dari main thread
+        self.addEventListener('message', function(e) {
+            const { type, payload } = e.data;
+            
+            if (type === 'calculateIndicators') {
+                const { symbol, closes, highs, lows, volumes } = payload;
+                
+                try {
+                    const rsi = calculateRSI(closes, 14);
+                    const stochastic = calculateStochastic(highs, lows, closes, 12, 5);
+                    const adx = calculateADX(highs, lows, closes, 14);
+                    const volumeMA20 = calculateVolumeMA(volumes, 20);
+                    
+                    self.postMessage({
+                        symbol: symbol,
+                        indicators: {
+                            rsi: rsi,
+                            stochK: stochastic.k,
+                            stochD: stochastic.d,
+                            adx: adx.adx,
+                            plusDI: adx.plusDI,
+                            minusDI: adx.minusDI,
+                            volumeMA20: volumeMA20
+                        }
+                    });
+                } catch (error) {
+                    console.error(`Error calculating indicators for ${symbol}:`, error);
+                    self.postMessage({
+                        symbol: symbol,
+                        indicators: {
+                            rsi: null,
+                            stochK: null,
+                            stochD: null,
+                            adx: null,
+                            plusDI: null,
+                            minusDI: null,
+                            volumeMA20: null
+                        }
+                    });
+                }
+            }
+        });
+    </script>
+
+    <script>
+        // Konfigurasi
+        const CONFIG = {
+            GOAPI_KEY: '1c19b4eb-88db-5ac7-4f77-25404f07',
+            GOAPI_BASE_URL: 'https://api.goapi.io/stock/idx',
+            CACHE_DURATION: 30 * 60 * 1000, // 30 menit
+            REFRESH_INTERVAL: 30 * 60 * 1000, // 30 menit
+            MAX_QUOTA: 200
+        };
+
+        // Daftar saham default (hanya kode)
+        let selectedStocks = [
+            { code: 'BBCA', yahooCode: 'BBCA.JK' },
+            { code: 'BBRI', yahooCode: 'BBRI.JK' },
+            { code: 'BMRI', yahooCode: 'BMRI.JK' },
+            { code: 'TLKM', yahooCode: 'TLKM.JK' },
+            { code: 'ASII', yahooCode: 'ASII.JK' },
+            { code: 'UNVR', yahooCode: 'UNVR.JK' },
+            { code: 'INDF', yahooCode: 'INDF.JK' },
+            { code: 'ANTM', yahooCode: 'ANTM.JK' },
+            { code: 'ADRO', yahooCode: 'ADRO.JK' },
+            { code: 'ICBP', yahooCode: 'ICBP.JK' }
+        ];
+
+        // Variabel global
+        let stockDataCache = {};
+        let lastUpdateTime = null;
+        let currentSort = { column: 'code', direction: 'asc' };
+        let apiQuotaUsed = 0;
+        let dataSource = 'GOAPI';
+        let indicatorWorker = null;
+        let stockToDelete = null;
+
+        // Elemen DOM
+        const stocksTableBody = document.getElementById('stocksTableBody');
+        const statusElement = document.getElementById('status');
+        const refreshBtn = document.getElementById('refreshBtn');
+        const searchInput = document.getElementById('searchInput');
+        const lastUpdateElement = document.getElementById('lastUpdate');
+        const quotaInfoElement = document.getElementById('quotaInfo');
+        const quotaUsedElement = document.getElementById('quotaUsed');
+        const stockCountElement = document.getElementById('stockCountValue');
+        const tableHeaders = document.querySelectorAll('th[data-sort]');
+        const newStockCodeInput = document.getElementById('newStockCode');
+        const addStockBtn = document.getElementById('addStockBtn');
+        const deleteModal = document.getElementById('deleteModal');
+        const deleteStockName = document.getElementById('deleteStockName');
+        const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
+        const cancelDeleteBtn = document.getElementById('cancelDeleteBtn');
+
+        // Inisialisasi Web Worker
+        function initializeWorker() {
+            if (window.Worker) {
+                const blob = new Blob([
+                    document.getElementById('workerScript').textContent
+                ], { type: 'application/javascript' });
+                
+                indicatorWorker = new Worker(URL.createObjectURL(blob));
+                
+                indicatorWorker.onmessage = function(e) {
+                    const { symbol, indicators } = e.data;
+                    
+                    if (stockDataCache[symbol]) {
+                        Object.assign(stockDataCache[symbol], indicators);
+                    }
+                };
+                
+                indicatorWorker.onerror = function(error) {
+                    console.error('Error dalam Web Worker:', error);
+                    showStatus('Error dalam perhitungan indikator', 'error');
+                };
+            } else {
+                console.warn('Web Worker tidak didukung, menggunakan main thread untuk kalkulasi');
+            }
+        }
+
+        // Cache Management
+        const cacheManager = {
+            get(key) {
+                try {
+                    const item = localStorage.getItem(`cache_${key}`);
+                    if (!item) return null;
+                    
+                    const { value, timestamp } = JSON.parse(item);
+                    if (Date.now() - timestamp > CONFIG.CACHE_DURATION) {
+                        localStorage.removeItem(`cache_${key}`);
+                        return null;
+                    }
+                    
+                    return value;
+                } catch (error) {
+                    console.error('Cache read error:', error);
+                    return null;
+                }
+            },
+            
+            set(key, value) {
+                try {
+                    const item = {
+                        value: value,
+                        timestamp: Date.now()
+                    };
+                    localStorage.setItem(`cache_${key}`, JSON.stringify(item));
+                } catch (error) {
+                    console.error('Cache write error:', error);
+                }
+            },
+            
+            // Simpan daftar saham ke localStorage
+            saveStockList() {
+                try {
+                    localStorage.setItem('stockList', JSON.stringify(selectedStocks));
+                } catch (error) {
+                    console.error('Error saving stock list:', error);
+                }
+            },
+            
+            // Load daftar saham dari localStorage
+            loadStockList() {
+                try {
+                    const saved = localStorage.getItem('stockList');
+                    if (saved) {
+                        return JSON.parse(saved);
+                    }
+                } catch (error) {
+                    console.error('Error loading stock list:', error);
+                }
+                return null;
+            }
+        };
+
+        // Quota Management
+        const quotaManager = {
+            init() {
+                const saved = localStorage.getItem('goapi_quota');
+                if (saved) {
+                    const { count, date } = JSON.parse(saved);
+                    const today = new Date().toDateString();
+                    
+                    if (date === today) {
+                        apiQuotaUsed = count;
+                    } else {
+                        apiQuotaUsed = 0;
+                        this.resetQuota();
+                    }
+                }
+                this.updateQuotaDisplay();
+            },
+            
+            increment() {
+                apiQuotaUsed++;
+                const today = new Date().toDateString();
+                localStorage.setItem('goapi_quota', JSON.stringify({
+                    count: apiQuotaUsed,
+                    date: today
+                }));
+                this.updateQuotaDisplay();
+            },
+            
+            resetQuota() {
+                const today = new Date().toDateString();
+                localStorage.setItem('goapi_quota', JSON.stringify({
+                    count: 0,
+                    date: today
+                }));
+                apiQuotaUsed = 0;
+                this.updateQuotaDisplay();
+            },
+            
+            updateQuotaDisplay() {
+                quotaUsedElement.textContent = apiQuotaUsed;
+                
+                if (apiQuotaUsed >= CONFIG.MAX_QUOTA * 0.9) {
+                    quotaInfoElement.style.color = 'var(--negative-color)';
+                } else if (apiQuotaUsed >= CONFIG.MAX_QUOTA * 0.7) {
+                    quotaInfoElement.style.color = 'var(--warning-color)';
+                } else {
+                    quotaInfoElement.style.color = 'var(--neutral-color)';
+                }
+            },
+            
+            checkQuota() {
+                return apiQuotaUsed < CONFIG.MAX_QUOTA;
+            }
+        };
+
+        // Fungsi untuk menampilkan status
+        function showStatus(message, type = '') {
+            statusElement.textContent = message;
+            statusElement.className = 'status';
+            if (type) {
+                statusElement.classList.add(type);
+            }
+        }
+
+        // Fungsi untuk memperbarui waktu terakhir update
+        function updateLastUpdateTime() {
+            const now = new Date();
+            lastUpdateTime = now;
+            lastUpdateElement.textContent = now.toLocaleString('id-ID');
+        }
+
+        // Update jumlah saham
+        function updateStockCount() {
+            stockCountElement.textContent = selectedStocks.length;
+        }
+
+        // GOAPI Service
+        const goapiService = {
+            async fetchBatchStocks() {
+                if (!quotaManager.checkQuota()) {
+                    throw new Error('Quota harian GOAPI habis');
+                }
+                
+                const symbols = selectedStocks.map(stock => stock.code).join(',');
+                const url = `${CONFIG.GOAPI_BASE_URL}/prices?symbols=${symbols}&api_key=${CONFIG.GOAPI_KEY}`;
+                
+                try {
+                    const response = await fetch(url);
+                    
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    
+                    const data = await response.json();
+                    quotaManager.increment();
+                    
+                    if (!data.data || !data.data.results) {
+                        throw new Error('Invalid response format from GOAPI');
+                    }
+                    
+                    return this.parseBatchResponse(data.data.results);
+                } catch (error) {
+                    console.error('GOAPI batch request failed:', error);
+                    throw error;
+                }
+            },
+            
+            parseBatchResponse(results) {
+                const parsedData = {};
+                
+                results.forEach(item => {
+                    const stock = selectedStocks.find(s => s.code === item.symbol);
+                    if (stock) {
+                        parsedData[stock.code] = {
+                            code: stock.code,
+                            price: item.price || item.last_price || 0,
+                            volume: item.volume || 0,
+                            source: 'GOAPI',
+                            indicatorsCalculated: false
+                        };
+                    }
+                });
+                
+                return parsedData;
+            }
+        };
+
+        // Yahoo Finance Service (untuk data historis indikator)
+        const yahooService = {
+            async fetchHistoricalData(symbol) {
+                const cacheKey = `historical_${symbol}`;
+                const cached = cacheManager.get(cacheKey);
+                if (cached) return cached;
+                
+                try {
+                    const proxyUrl = 'https://api.allorigins.win/raw?url=';
+                    const yahooUrl = `https://query1.finance.yahoo.com/v8/finance/chart/${symbol}.JK?range=6mo&interval=1d`;
+                    
+                    const response = await fetch(proxyUrl + encodeURIComponent(yahooUrl));
+                    
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    
+                    const data = await response.json();
+                    
+                    if (!data.chart || !data.chart.result || data.chart.result.length === 0) {
+                        throw new Error('Data historis tidak ditemukan');
+                    }
+                    
+                    const result = data.chart.result[0];
+                    const quote = result.indicators.quote[0];
+                    
+                    // Filter data yang valid
+                    const validData = [];
+                    for (let i = 0; i < quote.close.length; i++) {
+                        if (quote.high[i] !== null && quote.low[i] !== null && 
+                            quote.close[i] !== null && quote.volume[i] !== null) {
+                            validData.push({
+                                high: quote.high[i],
+                                low: quote.low[i],
+                                close: quote.close[i],
+                                volume: quote.volume[i]
+                            });
+                        }
+                    }
+                    
+                    cacheManager.set(cacheKey, validData);
+                    
+                    return validData;
+                } catch (error) {
+                    console.error(`Error fetching historical data for ${symbol}:`, error);
+                    return null;
+                }
+            }
+        };
+
+        // Fungsi untuk membatasi concurrent requests
+        async function runConcurrentPromises(tasks, concurrency = 3) {
+            const results = [];
+            const executing = [];
+            
+            for (const task of tasks) {
+                const p = task().then(result => {
+                    executing.splice(executing.indexOf(p), 1);
+                    return result;
+                });
+                executing.push(p);
+                results.push(p);
+                
+                if (executing.length >= concurrency) {
+                    await Promise.race(executing);
+                }
+            }
+            
+            return Promise.all(results);
+        }
+
+        // Main Data Fetching
+        async function fetchAllStocks() {
+            showStatus('Mengambil data saham...', 'loading');
+            refreshBtn.disabled = true;
+            addStockBtn.disabled = true;
+            
+            displayLoadingState();
+            
+            try {
+                // Coba GOAPI dulu
+                let stockData = {};
+                dataSource = 'GOAPI';
+                
+                try {
+                    stockData = await goapiService.fetchBatchStocks();
+                    showStatus('Menggunakan data real-time dari GOAPI', 'success');
+                } catch (goapiError) {
+                    console.warn('GOAPI failed:', goapiError);
+                    showStatus('GOAPI gagal, menggunakan data historis untuk indikator saja', 'warning');
+                    // Tetapi kita lanjutkan dengan data kosong untuk real-time
+                    selectedStocks.forEach(stock => {
+                        stockData[stock.code] = {
+                            code: stock.code,
+                            price: 0,
+                            volume: 0,
+                            source: 'YAHOO',
+                            indicatorsCalculated: false
+                        };
+                    });
+                }
+                
+                stockDataCache = stockData;
+                
+                // Hitung semua indikator menggunakan Web Worker dengan pembatasan concurrent
+                await calculateAllIndicators();
+                
+                updateLastUpdateTime();
+                
+            } catch (error) {
+                console.error('Failed to fetch stock data:', error);
+                showStatus(`Error: ${error.message}`, 'error');
+            } finally {
+                refreshBtn.disabled = false;
+                addStockBtn.disabled = false;
+            }
+        }
+
+        // Kalkulasi semua indikator dengan pembatasan concurrency
+        async function calculateAllIndicators() {
+            showStatus('Menghitung indikator teknikal...', 'loading');
+            
+            const tasks = selectedStocks.map(stock => 
+                () => calculateStockIndicators(stock.code)
+            );
+            
+            await runConcurrentPromises(tasks, 3); // Maksimal 3 request bersamaan
+            
+            // Tandai semua indikator sudah dihitung
+            Object.values(stockDataCache).forEach(stock => {
+                if (stock && !stock.error) {
+                    stock.indicatorsCalculated = true;
+                }
+            });
+            
+            displayStocks();
+            showStatus('Semua indikator berhasil dihitung', 'success');
+        }
+
+        // Kalkulasi indikator untuk satu saham
+        async function calculateStockIndicators(symbol) {
+            try {
+                const historicalData = await yahooService.fetchHistoricalData(symbol);
+                
+                if (historicalData && historicalData.length >= 30) { // Minimal 30 data untuk indikator
+                    const closes = historicalData.map(d => d.close);
+                    const highs = historicalData.map(d => d.high);
+                    const lows = historicalData.map(d => d.low);
+                    const volumes = historicalData.map(d => d.volume);
+                    
+                    if (indicatorWorker) {
+                        // Gunakan Web Worker
+                        indicatorWorker.postMessage({
+                            type: 'calculateIndicators',
+                            payload: {
+                                symbol: symbol,
+                                closes: closes,
+                                highs: highs,
+                                lows: lows,
+                                volumes: volumes
+                            }
+                        });
+                    } else {
+                        // Fallback ke main thread (jika worker tidak didukung)
+                        const rsi = calculateRSI(closes, 14);
+                        const stochastic = calculateStochastic(highs, lows, closes, 12, 5);
+                        const adx = calculateADX(highs, lows, closes, 14);
+                        const volumeMA20 = calculateVolumeMA(volumes, 20);
+                        
+                        if (stockDataCache[symbol]) {
+                            Object.assign(stockDataCache[symbol], {
+                                rsi: rsi,
+                                stochK: stochastic.k,
+                                stochD: stochastic.d,
+                                adx: adx.adx,
+                                plusDI: adx.plusDI,
+                                minusDI: adx.minusDI,
+                                volumeMA20: volumeMA20
+                            });
+                        }
+                    }
+                } else {
+                    console.warn(`Data historis tidak cukup untuk menghitung indikator: ${symbol}`);
+                }
+            } catch (error) {
+                console.error(`Error calculating indicators for ${symbol}:`, error);
+            }
+        }
+
+        // Fallback functions untuk main thread (jika worker tidak didukung)
+        function calculateRSI(closes, period = 14) {
+            if (!closes || closes.length < period + 1) return null;
+            
+            let gains = [], losses = [];
+            for (let i = 1; i < closes.length; i++) {
+                const change = closes[i] - closes[i-1];
+                gains.push(change >= 0 ? change : 0);
+                losses.push(change < 0 ? Math.abs(change) : 0);
+            }
+            
+            let avgGain = gains.slice(0, period).reduce((a, b) => a + b, 0) / period;
+            let avgLoss = losses.slice(0, period).reduce((a, b) => a + b, 0) / period;
+            
+            if (avgLoss === 0) return 100;
+            let rs = avgGain / avgLoss;
+            let rsi = 100 - (100 / (1 + rs));
+            
+            for (let i = period; i < gains.length; i++) {
+                avgGain = ((avgGain * (period - 1)) + gains[i]) / period;
+                avgLoss = ((avgLoss * (period - 1)) + losses[i]) / period;
+                
+                if (avgLoss === 0) {
+                    rsi = 100;
+                } else {
+                    rs = avgGain / avgLoss;
+                    rsi = 100 - (100 / (1 + rs));
+                }
+            }
+            
+            return Math.round(rsi * 100) / 100;
+        }
+
+        function calculateStochastic(highs, lows, closes, kPeriod = 12, dPeriod = 5) {
+            if (!highs || !lows || !closes || closes.length < kPeriod) {
+                return { k: null, d: null };
+            }
+            
+            const kValues = [];
+            for (let i = kPeriod - 1; i < closes.length; i++) {
+                const periodHigh = Math.max(...highs.slice(i - kPeriod + 1, i + 1));
+                const periodLow = Math.min(...lows.slice(i - kPeriod + 1, i + 1));
+                
+                if (periodHigh === periodLow) {
+                    kValues.push(50);
+                } else {
+                    const k = ((closes[i] - periodLow) / (periodHigh - periodLow)) * 100;
+                    kValues.push(k);
+                }
+            }
+            
+            const dValues = [];
+            for (let i = dPeriod - 1; i < kValues.length; i++) {
+                const d = kValues.slice(i - dPeriod + 1, i + 1).reduce((a, b) => a + b, 0) / dPeriod;
+                dValues.push(d);
+            }
+            
+            const latestK = kValues.length > 0 ? Math.round(kValues[kValues.length - 1] * 100) / 100 : null;
+            const latestD = dValues.length > 0 ? Math.round(dValues[dValues.length - 1] * 100) / 100 : null;
+            
+            return { k: latestK, d: latestD };
+        }
+
+        function calculateADX(highs, lows, closes, period = 14) {
+            if (!highs || !lows || !closes || closes.length < period * 2) {
+                return { adx: null, plusDI: null, minusDI: null };
+            }
+            
+            const trValues = [], plusDMValues = [], minusDMValues = [];
+            
+            for (let i = 1; i < highs.length; i++) {
+                const tr = Math.max(highs[i] - lows[i], Math.abs(highs[i] - closes[i-1]), Math.abs(lows[i] - closes[i-1]));
+                trValues.push(tr);
+                
+                const upMove = highs[i] - highs[i-1];
+                const downMove = lows[i-1] - lows[i];
+                
+                plusDMValues.push(upMove > downMove && upMove > 0 ? upMove : 0);
+                minusDMValues.push(downMove > upMove && downMove > 0 ? downMove : 0);
+            }
+            
+            let smoothedTR = trValues.slice(0, period).reduce((a, b) => a + b, 0) / period;
+            let smoothedPlusDM = plusDMValues.slice(0, period).reduce((a, b) => a + b, 0) / period;
+            let smoothedMinusDM = minusDMValues.slice(0, period).reduce((a, b) => a + b, 0) / period;
+            
+            const plusDIValues = [(smoothedPlusDM / smoothedTR) * 100];
+            const minusDIValues = [(smoothedMinusDM / smoothedTR) * 100];
+            
+            for (let i = period; i < trValues.length; i++) {
+                smoothedTR = (smoothedTR * (period - 1) + trValues[i]) / period;
+                smoothedPlusDM = (smoothedPlusDM * (period - 1) + plusDMValues[i]) / period;
+                smoothedMinusDM = (smoothedMinusDM * (period - 1) + minusDMValues[i]) / period;
+                
+                plusDIValues.push((smoothedPlusDM / smoothedTR) * 100);
+                minusDIValues.push((smoothedMinusDM / smoothedTR) * 100);
+            }
+            
+            const dxValues = [];
+            for (let i = 0; i < plusDIValues.length; i++) {
+                const diDiff = Math.abs(plusDIValues[i] - minusDIValues[i]);
+                const diSum = plusDIValues[i] + minusDIValues[i];
+                dxValues.push((diDiff / diSum) * 100);
+            }
+            
+            let adx = dxValues.slice(0, period).reduce((a, b) => a + b, 0) / period;
+            for (let i = period; i < dxValues.length; i++) {
+                adx = (adx * (period - 1) + dxValues[i]) / period;
+            }
+            
+            const latestPlusDI = plusDIValues.length > 0 ? Math.round(plusDIValues[plusDIValues.length - 1] * 100) / 100 : null;
+            const latestMinusDI = minusDIValues.length > 0 ? Math.round(minusDIValues[minusDIValues.length - 1] * 100) / 100 : null;
+            const latestADX = Math.round(adx * 100) / 100;
+            
+            return { adx: latestADX, plusDI: latestPlusDI, minusDI: latestMinusDI };
+        }
+
+        function calculateVolumeMA(volumes, period = 20) {
+            if (!volumes || volumes.length < period) return null;
+            const sum = volumes.slice(-period).reduce((a, b) => a + b, 0);
+            return Math.round(sum / period);
+        }
+
+        // Tambah saham baru
+        function addNewStock() {
+            const code = newStockCodeInput.value.trim().toUpperCase();
+            
+            if (!code) {
+                showStatus('Kode saham tidak boleh kosong', 'error');
+                return;
+            }
+            
+            // Cek apakah saham sudah ada
+            if (selectedStocks.some(stock => stock.code === code)) {
+                showStatus(`Saham ${code} sudah ada dalam daftar`, 'error');
+                return;
+            }
+            
+            // Tambah saham baru
+            const newStock = {
+                code: code,
+                yahooCode: `${code}.JK`
+            };
+            
+            selectedStocks.push(newStock);
+            cacheManager.saveStockList();
+            updateStockCount();
+            
+            // Reset input
+            newStockCodeInput.value = '';
+            
+            showStatus(`Saham ${code} berhasil ditambahkan`, 'success');
+            
+            // Refresh data untuk menampilkan saham baru
+            fetchAllStocks();
+        }
+
+        // Hapus saham
+        function removeStock(code) {
+            const stockToRemove = selectedStocks.find(stock => stock.code === code);
+            if (!stockToRemove) return;
+            
+            // Tampilkan modal konfirmasi
+            deleteStockName.textContent = stockToRemove.code;
+            stockToDelete = code;
+            deleteModal.style.display = 'flex';
+        }
+
+        // Konfirmasi hapus saham
+        function confirmDelete() {
+            if (!stockToDelete) return;
+            
+            // Hapus dari selectedStocks
+            selectedStocks = selectedStocks.filter(stock => stock.code !== stockToDelete);
+            cacheManager.saveStockList();
+            updateStockCount();
+            
+            // Hapus dari stockDataCache
+            delete stockDataCache[stockToDelete];
+            
+            // Tutup modal
+            deleteModal.style.display = 'none';
+            stockToDelete = null;
+            
+            // Refresh tampilan
+            displayStocks();
+            showStatus('Saham berhasil dihapus', 'success');
+        }
+
+        // Display functions
+        function displayLoadingState() {
+            stocksTableBody.innerHTML = '';
+            
+            for (let i = 0; i < selectedStocks.length; i++) {
+                const row = document.createElement('tr');
+                row.className = 'loading-row';
+                row.innerHTML = `
+                    <td class="symbol">${selectedStocks[i]?.code || ''}</td>
+                    <td><div class="price"></div></td>
+                    <td><div class="volume"></div></td>
+                    <td><div class="indicator-value"></div></td>
+                    <td><div class="indicator-value"></div></td>
+                    <td><div class="indicator-value"></div></td>
+                    <td><div class="indicator-value"></div></td>
+                    <td><div class="indicator-value"></div></td>
+                    <td><div class="indicator-value"></div></td>
+                    <td><div class="indicator-value"></div></td>
+                    <td><div></div></td>
+                `;
+                stocksTableBody.appendChild(row);
+            }
+        }
+
+        function displayStocks(filter = '') {
+            stocksTableBody.innerHTML = '';
+            
+            let stocksArray = Object.values(stockDataCache);
+            
+            if (filter) {
+                stocksArray = stocksArray.filter(stock => 
+                    stock.code.toLowerCase().includes(filter.toLowerCase())
+                );
+            }
+            
+            stocksArray.sort((a, b) => {
+                if (a.error && !b.error) return 1;
+                if (!a.error && b.error) return -1;
+                if (a.error && b.error) {
+                    return currentSort.direction === 'asc' 
+                        ? a.code.localeCompare(b.code) 
+                        : b.code.localeCompare(a.code);
+                }
+                
+                let aValue = a[currentSort.column];
+                let bValue = b[currentSort.column];
+                
+                if (aValue === null || aValue === undefined) aValue = currentSort.direction === 'asc' ? Infinity : -Infinity;
+                if (bValue === null || bValue === undefined) bValue = currentSort.direction === 'asc' ? Infinity : -Infinity;
+                
+                if (typeof aValue === 'string') {
+                    return currentSort.direction === 'asc' 
+                        ? aValue.localeCompare(bValue) 
+                        : bValue.localeCompare(aValue);
+                }
+                
+                return currentSort.direction === 'asc' 
+                    ? aValue - bValue 
+                    : bValue - aValue;
+            });
+            
+            if (stocksArray.length === 0) {
+                const row = document.createElement('tr');
+                row.innerHTML = `<td colspan="11" style="text-align: center; padding: 40px;">Tidak ada saham yang sesuai dengan pencarian.</td>`;
+                stocksTableBody.appendChild(row);
+            } else {
+                stocksArray.forEach(stock => {
+                    const row = document.createElement('tr');
+                    
+                    if (stock.error) {
+                        row.innerHTML = `
+                            <td class="symbol">${stock.code}</td>
+                            <td colspan="9" style="color: var(--negative-color);">Error: ${stock.error}</td>
+                            <td><button class="delete-btn" data-code="${stock.code}">🗑️</button></td>
+                        `;
+                    } else {
+                        const isValidPrice = !isNaN(stock.price) && stock.price > 0;
+                        const isValidVolume = !isNaN(stock.volume);
+                        
+                        // Tentukan kelas CSS untuk setiap indikator
+                        const rsiClass = getRSIClass(stock.rsi);
+                        const stochKClass = getStochClass(stock.stochK);
+                        const stochDClass = getStochClass(stock.stochD);
+                        const adxClass = getADXClass(stock.adx);
+                        const sourceClass = stock.source === 'GOAPI' ? 'goapi' : 'yahoo';
+                        
+                        row.innerHTML = `
+                            <td class="symbol">
+                                ${stock.code}
+                                <span class="data-source ${sourceClass}">(${stock.source})</span>
+                            </td>
+                            <td class="price">${isValidPrice ? formatCurrency(stock.price) : '<span class="data-unavailable">N/A</span>'}</td>
+                            <td class="volume">${isValidVolume ? formatNumber(stock.volume) : '<span class="data-unavailable">N/A</span>'}</td>
+                            <td class="indicator-value ${rsiClass}">${formatIndicator(stock.rsi)}</td>
+                            <td class="indicator-value ${stochKClass}">${formatIndicator(stock.stochK)}</td>
+                            <td class="indicator-value ${stochDClass}">${formatIndicator(stock.stochD)}</td>
+                            <td class="indicator-value ${adxClass}">${formatIndicator(stock.adx)}</td>
+                            <td class="indicator-value">${formatIndicator(stock.plusDI)}</td>
+                            <td class="indicator-value">${formatIndicator(stock.minusDI)}</td>
+                            <td class="indicator-value">${formatIndicator(stock.volumeMA20, true)}</td>
+                            <td><button class="delete-btn" data-code="${stock.code}">🗑️</button></td>
+                        `;
+                    }
+                    
+                    stocksTableBody.appendChild(row);
+                });
+                
+                // Tambah event listener untuk tombol hapus
+                document.querySelectorAll('.delete-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        const code = e.target.getAttribute('data-code');
+                        removeStock(code);
+                    });
+                });
+            }
+            
+            updateSortIndicator();
+        }
+
+        // Helper functions untuk styling indikator
+        function getRSIClass(value) {
+            if (value === null || value === undefined) return '';
+            if (value >= 70) return 'rsi-overbought';
+            if (value <= 30) return 'rsi-oversold';
+            return 'rsi-neutral';
+        }
+
+        function getStochClass(value) {
+            if (value === null || value === undefined) return '';
+            if (value >= 80) return 'stoch-overbought';
+            if (value <= 20) return 'stoch-oversold';
+            return 'stoch-neutral';
+        }
+
+        function getADXClass(value) {
+            if (value === null || value === undefined) return '';
+            if (value >= 25) return 'adx-strong';
+            return 'adx-weak';
+        }
+
+        function formatIndicator(value, isVolume = false) {
+            if (value === null || value === undefined) return '<span class="data-unavailable">N/A</span>';
+            if (isVolume) return formatNumber(value);
+            return value.toFixed(2);
+        }
+
+        function updateSortIndicator() {
+            tableHeaders.forEach(header => {
+                header.classList.remove('sort-asc', 'sort-desc');
+                
+                if (header.getAttribute('data-sort') === currentSort.column) {
+                    header.classList.add(currentSort.direction === 'asc' ? 'sort-asc' : 'sort-desc');
+                }
+            });
+        }
+
+        // Utility functions
+        function formatCurrency(value) {
+            return new Intl.NumberFormat('id-ID', {
+                style: 'currency',
+                currency: 'IDR',
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            }).format(value);
+        }
+
+        function formatNumber(value) {
+            if (value >= 1000000000) {
+                return (value / 1000000000).toFixed(2) + 'M';
+            } else if (value >= 1000000) {
+                return (value / 1000000).toFixed(2) + 'Jt';
+            } else if (value >= 1000) {
+                return (value / 1000).toFixed(2) + 'Rb';
+            }
+            return new Intl.NumberFormat('id-ID').format(value);
+        }
+
+        // Event listeners
+        refreshBtn.addEventListener('click', fetchAllStocks);
+        
+        searchInput.addEventListener('input', (e) => {
+            displayStocks(e.target.value);
+        });
+        
+        addStockBtn.addEventListener('click', addNewStock);
+        
+        // Enter key untuk tambah saham
+        newStockCodeInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                addNewStock();
+            }
+        });
+        
+        // Modal event listeners
+        confirmDeleteBtn.addEventListener('click', confirmDelete);
+        
+        cancelDeleteBtn.addEventListener('click', () => {
+            deleteModal.style.display = 'none';
+            stockToDelete = null;
+        });
+        
+        // Tutup modal ketika klik di luar
+        deleteModal.addEventListener('click', (e) => {
+            if (e.target === deleteModal) {
+                deleteModal.style.display = 'none';
+                stockToDelete = null;
+            }
+        });
+        
+        tableHeaders.forEach(header => {
+            header.addEventListener('click', () => {
+                const column = header.getAttribute('data-sort');
+                
+                if (currentSort.column === column) {
+                    currentSort.direction = currentSort.direction === 'asc' ? 'desc' : 'asc';
+                } else {
+                    currentSort.column = column;
+                    currentSort.direction = 'asc';
+                }
+                
+                displayStocks(searchInput.value);
+            });
+        });
+
+        // Initialize
+        initializeWorker();
+        quotaManager.init();
+        
+        // Load daftar saham dari localStorage jika ada
+        const savedStocks = cacheManager.loadStockList();
+        if (savedStocks && savedStocks.length > 0) {
+            selectedStocks = savedStocks;
+        }
+        
+        updateStockCount();
+        fetchAllStocks();
+        
+        // Auto-refresh setiap 30 menit
+        setInterval(fetchAllStocks, CONFIG.REFRESH_INTERVAL);
+        
+        // Reset quota setiap hari jam 00:00
+        setInterval(() => {
+            const now = new Date();
+            if (now.getHours() === 0 && now.getMinutes() === 0) {
+                quotaManager.resetQuota();
+            }
+        }, 60000);
+    </script>
+</body>
+</html>
