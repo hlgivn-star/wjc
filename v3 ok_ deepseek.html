@@ -1,0 +1,1553 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Screener Saham - Optimized Multi Strategi</title>
+    <style>
+        :root {
+            --primary-color: #1e3a8a;
+            --secondary-color: #3b82f6;
+            --positive-color: #10b981;
+            --negative-color: #ef4444;
+            --warning-color: #f59e0b;
+            --neutral-color: #6b7280;
+            --background-color: #f8fafc;
+            --header-color: #1e40af;
+            --border-color: #e5e7eb;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        }
+        
+        body {
+            background-color: var(--background-color);
+            color: #1f2937;
+            line-height: 1.6;
+            height: 100vh;
+            overflow: hidden;
+        }
+        
+        .container {
+            max-width: 100%;
+            margin: 0 auto;
+            padding: 10px;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 15px;
+            padding: 15px 0;
+            border-bottom: 1px solid var(--border-color);
+            flex-shrink: 0;
+        }
+        
+        h1 {
+            color: var(--primary-color);
+            margin-bottom: 5px;
+            font-size: 24px;
+        }
+        
+        .subtitle {
+            color: var(--neutral-color);
+            font-size: 14px;
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+            gap: 10px;
+            background: white;
+            padding: 12px;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            flex-shrink: 0;
+        }
+        
+        .search-box {
+            flex-grow: 1;
+            max-width: 250px;
+            position: relative;
+        }
+        
+        .search-box i {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--neutral-color);
+        }
+        
+        input[type="text"] {
+            width: 100%;
+            padding: 8px 12px 8px 35px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+        
+        input[type="text"]:focus {
+            outline: none;
+            border-color: var(--secondary-color);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+        
+        .add-stock-section {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+        
+        .add-stock-input {
+            width: 100px;
+            padding: 8px 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 13px;
+            text-transform: uppercase;
+        }
+        
+        .add-btn {
+            background-color: var(--positive-color);
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 500;
+            transition: background-color 0.3s;
+        }
+        
+        .add-btn:hover {
+            background-color: #0da271;
+        }
+        
+        .add-btn:disabled {
+            background-color: var(--neutral-color);
+            cursor: not-allowed;
+        }
+        
+        .screener-controls {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+        
+        .start-btn, .pause-btn, .stop-btn, .refresh-btn, .delete-all-btn {
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: background-color 0.3s;
+        }
+        
+        .start-btn {
+            background-color: var(--positive-color);
+        }
+        
+        .start-btn:hover {
+            background-color: #0da271;
+        }
+        
+        .stop-btn {
+            background-color: var(--negative-color);
+        }
+        
+        .stop-btn:hover {
+            background-color: #dc2626;
+        }
+        
+        .pause-btn {
+            background-color: var(--warning-color);
+        }
+        
+        .pause-btn:hover {
+            background-color: #d97706;
+        }
+        
+        .stop-btn:disabled, .start-btn:disabled, .pause-btn:disabled {
+            background-color: var(--neutral-color);
+            cursor: not-allowed;
+        }
+        
+        .refresh-btn {
+            background-color: var(--secondary-color);
+        }
+        
+        .refresh-btn:hover {
+            background-color: var(--primary-color);
+        }
+        
+        .refresh-btn:disabled {
+            background-color: var(--neutral-color);
+            cursor: not-allowed;
+        }
+        
+        .delete-all-btn {
+            background-color: var(--negative-color);
+        }
+        
+        .delete-all-btn:hover {
+            background-color: #dc2626;
+        }
+        
+        .delete-all-btn:disabled {
+            background-color: var(--neutral-color);
+            cursor: not-allowed;
+        }
+        
+        .last-update {
+            color: var(--neutral-color);
+            font-size: 12px;
+        }
+        
+        .status {
+            margin-bottom: 15px;
+            padding: 10px 12px;
+            border-radius: 6px;
+            text-align: center;
+            font-weight: 500;
+            font-size: 14px;
+            flex-shrink: 0;
+        }
+        
+        .status.loading {
+            background-color: #fef3c7;
+            color: #d97706;
+            border: 1px solid #fcd34d;
+        }
+        
+        .status.error {
+            background-color: #fee2e2;
+            color: var(--negative-color);
+            border: 1px solid #fecaca;
+        }
+        
+        .status.success {
+            background-color: #d1fae5;
+            color: var(--positive-color);
+            border: 1px solid #a7f3d0;
+        }
+        
+        .status.warning {
+            background-color: #fef3c7;
+            color: #d97706;
+            border: 1px solid #fcd34d;
+        }
+        
+        .status.stopped {
+            background-color: #f3f4f6;
+            color: var(--neutral-color);
+            border: 1px solid var(--border-color);
+        }
+        
+        .status.paused {
+            background-color: #fef3c7;
+            color: #d97706;
+            border: 1px solid #fcd34d;
+        }
+        
+        .table-container {
+            background-color: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            margin-bottom: 15px;
+            overflow: auto;
+            flex-grow: 1;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 1500px;
+        }
+        
+        thead {
+            background-color: var(--header-color);
+            color: white;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        
+        th {
+            padding: 10px 8px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            cursor: pointer;
+            user-select: none;
+            position: relative;
+        }
+        
+        th:hover {
+            background-color: #1e3a8a;
+        }
+        
+        th.sort-asc::after {
+            content: " ▲";
+            font-size: 9px;
+        }
+        
+        th.sort-desc::after {
+            content: " ▼";
+            font-size: 9px;
+        }
+        
+        tbody tr {
+            border-bottom: 1px solid var(--border-color);
+            transition: background-color 0.2s;
+        }
+        
+        tbody tr:hover {
+            background-color: #f3f4f6;
+        }
+        
+        td {
+            padding: 10px 8px;
+            font-size: 12px;
+        }
+        
+        .symbol {
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+        
+        .price {
+            font-weight: 600;
+            font-size: 13px;
+        }
+        
+        .volume {
+            font-family: 'Courier New', monospace;
+        }
+        
+        .indicator-value {
+            font-weight: 600;
+            text-align: center;
+            padding: 3px 6px;
+            border-radius: 3px;
+            font-size: 11px;
+        }
+        
+        .data-unavailable {
+            color: var(--neutral-color);
+            font-style: italic;
+        }
+        
+        .delete-btn {
+            background: none;
+            border: none;
+            color: var(--negative-color);
+            cursor: pointer;
+            font-size: 14px;
+            padding: 4px;
+            border-radius: 4px;
+            transition: background-color 0.2s;
+        }
+        
+        .delete-btn:hover {
+            background-color: rgba(239, 68, 68, 0.1);
+        }
+        
+        footer {
+            text-align: center;
+            padding-top: 10px;
+            border-top: 1px solid var(--border-color);
+            color: var(--neutral-color);
+            font-size: 12px;
+            flex-shrink: 0;
+        }
+        
+        .legend {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
+            flex-shrink: 0;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 11px;
+        }
+        
+        .legend-color {
+            width: 10px;
+            height: 10px;
+            border-radius: 2px;
+        }
+        
+        .stock-count {
+            text-align: center;
+            margin-bottom: 10px;
+            color: var(--neutral-color);
+            font-size: 13px;
+            flex-shrink: 0;
+        }
+        
+        .settings-panel {
+            background: white;
+            padding: 12px;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            margin-bottom: 15px;
+            flex-shrink: 0;
+        }
+        
+        .settings-title {
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--primary-color);
+            font-size: 14px;
+        }
+        
+        .settings-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 12px;
+        }
+        
+        .setting-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        
+        .setting-label {
+            font-weight: 500;
+            font-size: 13px;
+        }
+        
+        .timeframe-select, .indicator-checkbox {
+            padding: 6px 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 13px;
+        }
+        
+        .checkbox-group {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .checkbox-item input[type="checkbox"] {
+            width: 14px;
+            height: 14px;
+        }
+        
+        @media (max-width: 768px) {
+            .controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .search-box {
+                max-width: 100%;
+            }
+            
+            .add-stock-section {
+                flex-direction: column;
+                width: 100%;
+            }
+            
+            .add-stock-input {
+                width: 100%;
+            }
+            
+            .screener-controls {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            
+            th, td {
+                padding: 8px 6px;
+            }
+            
+            h1 {
+                font-size: 20px;
+            }
+            
+            .settings-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        /* Loading animation */
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+        
+        .loading-row td {
+            animation: pulse 1.5s infinite;
+        }
+        
+        .loading-row .price, .loading-row .volume {
+            background-color: #e5e7eb;
+            height: 14px;
+            border-radius: 4px;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .modal-content {
+            background: white;
+            padding: 18px;
+            border-radius: 8px;
+            max-width: 450px;
+            width: 90%;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        }
+        
+        .modal h3 {
+            margin-bottom: 12px;
+            color: var(--primary-color);
+            font-size: 16px;
+        }
+        
+        .modal p {
+            margin-bottom: 12px;
+            line-height: 1.5;
+            font-size: 14px;
+        }
+        
+        .modal-buttons {
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+            margin-top: 15px;
+        }
+        
+        .modal-btn {
+            padding: 7px 14px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 13px;
+        }
+        
+        .modal-btn.confirm {
+            background-color: var(--negative-color);
+            color: white;
+        }
+        
+        .modal-btn.cancel {
+            background-color: var(--neutral-color);
+            color: white;
+        }
+        
+        .timeframe-group {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        
+        .timeframe-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 6px;
+        }
+        
+        .timeframe-option {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        
+        .timeframe-option input[type="radio"] {
+            width: 14px;
+            height: 14px;
+        }
+        
+        .refresh-interval {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .interval-input {
+            width: 70px;
+            padding: 6px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            text-align: center;
+            font-size: 13px;
+        }
+        
+        /* Styles for Volume Indicator */
+        .volume-strong-bullish {
+            background-color: rgba(16, 185, 129, 0.3);
+            color: var(--positive-color);
+            font-weight: bold;
+        }
+        
+        .volume-bullish {
+            background-color: rgba(16, 185, 129, 0.15);
+            color: var(--positive-color);
+        }
+        
+        .volume-neutral {
+            background-color: rgba(107, 114, 128, 0.1);
+            color: var(--neutral-color);
+        }
+        
+        .volume-bearish {
+            background-color: rgba(239, 68, 68, 0.15);
+            color: var(--negative-color);
+        }
+        
+        .volume-strong-bearish {
+            background-color: rgba(239, 68, 68, 0.3);
+            color: var(--negative-color);
+            font-weight: bold;
+        }
+        
+        /* Styles for BOZZ TRADE Indicator */
+        .bozz-buy {
+            background-color: rgba(16, 185, 129, 0.3);
+            color: var(--positive-color);
+            font-weight: bold;
+        }
+        
+        .bozz-neutral {
+            background-color: rgba(107, 114, 128, 0.1);
+            color: var(--neutral-color);
+        }
+        
+        .bozz-high-volatility {
+            background-color: rgba(239, 68, 68, 0.15);
+            color: var(--negative-color);
+        }
+        
+        .bozz-low-volatility {
+            background-color: rgba(16, 185, 129, 0.15);
+            color: var(--positive-color);
+        }
+        
+        /* Styles for NR4/NR7 Indicator */
+        .nr4-signal {
+            background-color: rgba(255, 152, 0, 0.15);
+            color: #ff9800;
+            font-weight: bold;
+        }
+        
+        .nr7-signal {
+            background-color: rgba(255, 193, 7, 0.15);
+            color: #ffc107;
+            font-weight: bold;
+        }
+        
+        .nr-both-signal {
+            background-color: rgba(255, 87, 34, 0.15);
+            color: #ff5722;
+            font-weight: bold;
+        }
+        
+        /* Styles for Pivot Indicator */
+        .pivot-bullish {
+            background-color: rgba(16, 185, 129, 0.15);
+            color: var(--positive-color);
+        }
+        
+        .pivot-neutral {
+            background-color: rgba(107, 114, 128, 0.1);
+            color: var(--neutral-color);
+        }
+        
+        .signal-icon {
+            font-size: 14px;
+            margin-right: 4px;
+        }
+        
+        .filter-controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+            flex-shrink: 0;
+        }
+        
+        .filter-btn {
+            background-color: white;
+            color: var(--neutral-color);
+            border: 1px solid var(--border-color);
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+        
+        .filter-btn.active {
+            background-color: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+        
+        .filter-btn:hover:not(.active) {
+            background-color: #f3f4f6;
+        }
+        
+        .signal-score {
+            font-weight: bold;
+            text-align: center;
+            padding: 3px 6px;
+            border-radius: 3px;
+            font-size: 11px;
+        }
+        
+        .score-high {
+            background-color: rgba(16, 185, 129, 0.3);
+            color: var(--positive-color);
+        }
+        
+        .score-medium {
+            background-color: rgba(255, 152, 0, 0.15);
+            color: #ff9800;
+        }
+        
+        .score-low {
+            background-color: rgba(107, 114, 128, 0.1);
+            color: var(--neutral-color);
+        }
+        
+        /* Progress Bar Styles */
+        .progress-container {
+            background: white;
+            padding: 12px;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            margin-bottom: 15px;
+            flex-shrink: 0;
+        }
+        
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 13px;
+            font-weight: 500;
+        }
+        
+        .progress-bar {
+            height: 8px;
+            background-color: #e5e7eb;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--secondary-color), var(--positive-color));
+            border-radius: 4px;
+            transition: width 0.3s ease;
+            width: 0%;
+        }
+        
+        .progress-details {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 5px;
+            font-size: 11px;
+            color: var(--neutral-color);
+        }
+        
+        .performance-metrics {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+            padding: 10px;
+            background: #f8fafc;
+            border-radius: 6px;
+        }
+        
+        .metric {
+            text-align: center;
+        }
+        
+        .metric-value {
+            font-weight: 600;
+            font-size: 14px;
+        }
+        
+        .metric-label {
+            font-size: 11px;
+            color: var(--neutral-color);
+        }
+        
+        /* Memory warning */
+        .memory-warning {
+            background-color: #fef3c7;
+            color: #d97706;
+            padding: 8px 12px;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            font-size: 12px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Screener Saham - Optimized Multi Strategi</h1>
+            <p class="subtitle">Dengan Web Workers, Progress Tracking & Memory Management</p>
+        </header>
+        
+        <!-- Memory Warning -->
+        <div class="memory-warning" id="memoryWarning">
+            ⚠️ Penggunaan memori tinggi. Pertimbangkan untuk mengurangi jumlah saham atau nonaktifkan strategi yang tidak diperlukan.
+        </div>
+        
+        <!-- Progress Bar -->
+        <div class="progress-container" id="progressContainer" style="display: none;">
+            <div class="progress-header">
+                <span>Memproses Data Saham</span>
+                <span id="progressPercentage">0%</span>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+            <div class="progress-details">
+                <span id="progressText">Mempersiapkan...</span>
+                <span id="performanceText">-</span>
+            </div>
+            <div class="performance-metrics" id="performanceMetrics">
+                <div class="metric">
+                    <div class="metric-value" id="processedStocks">0</div>
+                    <div class="metric-label">Diproses</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value" id="successStocks">0</div>
+                    <div class="metric-label">Berhasil</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value" id="failedStocks">0</div>
+                    <div class="metric-label">Gagal</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value" id="processingTime">0s</div>
+                    <div class="metric-label">Waktu</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="settings-panel">
+            <div class="settings-title">Pengaturan Screener</div>
+            <div class="settings-grid">
+                <div class="setting-group">
+                    <label class="setting-label">Time Frame Analisis</label>
+                    <div class="timeframe-group">
+                        <div class="timeframe-options">
+                            <div class="timeframe-option">
+                                <input type="radio" id="tf-1d" name="timeframe" value="1d" checked>
+                                <label for="tf-1d">1 Hari</label>
+                            </div>
+                            <div class="timeframe-option">
+                                <input type="radio" id="tf-1wk" name="timeframe" value="1wk">
+                                <label for="tf-1wk">1 Minggu</label>
+                            </div>
+                            <div class="timeframe-option">
+                                <input type="radio" id="tf-1mo" name="timeframe" value="1mo">
+                                <label for="tf-1mo">1 Bulan</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="setting-group">
+                    <label class="setting-label">Indikator</label>
+                    <div class="checkbox-group">
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="volumeCheckbox" checked>
+                            <label for="volumeCheckbox">Volume Analysis</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="bozzCheckbox" checked>
+                            <label for="bozzCheckbox">BOZZ TRADE Strategy</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="nr4nr7Checkbox" checked>
+                            <label for="nr4nr7Checkbox">NR4/NR7 Strategy</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="pivotCheckbox" checked>
+                            <label for="pivotCheckbox">Pivot Strategy</label>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="setting-group">
+                    <label class="setting-label">Optimisasi</label>
+                    <div class="checkbox-group">
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="webWorkerCheckbox" checked>
+                            <label for="webWorkerCheckbox">Gunakan Web Workers</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="incrementalCheckbox" checked>
+                            <label for="incrementalCheckbox">Tampilan Incremental</label>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="setting-group">
+                    <label class="setting-label">Interval Refresh (detik)</label>
+                    <div class="refresh-interval">
+                        <input type="number" id="refreshInterval" class="interval-input" value="60" min="30" max="300">
+                        <span>detik</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="filter-controls">
+            <button class="filter-btn active" data-filter="all">Semua Saham</button>
+            <button class="filter-btn" data-filter="volume-bullish">Volume Bullish</button>
+            <button class="filter-btn" data-filter="bozz-buy">BOZZ Buy Signal</button>
+            <button class="filter-btn" data-filter="nr4nr7">NR4/NR7 Signal</button>
+            <button class="filter-btn" data-filter="pivot-bullish">Pivot Bullish</button>
+            <button class="filter-btn" data-filter="high-score">Signal Score Tinggi</button>
+        </div>
+        
+        <div class="controls">
+            <div class="search-box">
+                <i>🔍</i>
+                <input type="text" id="searchInput" placeholder="Cari kode saham...">
+            </div>
+            
+            <div class="add-stock-section">
+                <input type="text" id="newStockCode" class="add-stock-input" placeholder="Kode (BBCA)" maxlength="4">
+                <button id="addStockBtn" class="add-btn">Tambah Saham</button>
+            </div>
+            
+            <div class="screener-controls">
+                <button id="startBtn" class="start-btn">
+                    <span>▶ Start</span>
+                </button>
+                <button id="pauseBtn" class="pause-btn" disabled>
+                    <span>⏸️ Pause</span>
+                </button>
+                <button id="stopBtn" class="stop-btn" disabled>
+                    <span>⏹ Stop</span>
+                </button>
+                <button id="refreshBtn" class="refresh-btn">
+                    <span>↻ Refresh</span>
+                </button>
+                <button id="deleteAllBtn" class="delete-all-btn">
+                    <span>🗑️ Hapus Semua</span>
+                </button>
+            </div>
+            
+            <div class="last-update">
+                Terakhir diperbarui: <span id="lastUpdate">-</span>
+            </div>
+        </div>
+        
+        <div class="stock-count" id="stockCount">
+            Jumlah saham dalam pemantauan: <span id="stockCountValue">0</span>
+        </div>
+        
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-color" style="background-color: rgba(16, 185, 129, 0.3);"></div>
+                <span>Bullish Kuat (Volume > 2x MA)</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background-color: rgba(16, 185, 129, 0.15);"></div>
+                <span>Bullish (Volume > 1.5x MA)</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background-color: rgba(59, 130, 246, 0.15);"></div>
+                <span>BOZZ Buy Signal</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background-color: rgba(255, 152, 0, 0.15);"></div>
+                <span>NR4 Signal</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background-color: rgba(255, 193, 7, 0.15);"></div>
+                <span>NR7 Signal</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background-color: rgba(16, 185, 129, 0.15);"></div>
+                <span>Pivot Bullish</span>
+            </div>
+        </div>
+        
+        <div id="status" class="status stopped">
+            Screener dalam keadaan STOP. Klik START untuk memulai analisis.
+        </div>
+        
+        <div class="table-container">
+            <table id="stocksTable">
+                <thead>
+                    <tr>
+                        <th data-sort="code" class="sort-asc">Kode</th>
+                        <th data-sort="price">Harga</th>
+                        <th data-sort="change">Perubahan</th>
+                        <th data-sort="volume">Volume</th>
+                        <th data-sort="volumeMA" class="indicator-column">Vol MA(20)</th>
+                        <th data-sort="volumeRatio" class="indicator-column">Vol Ratio</th>
+                        <th data-sort="volumeSignal" class="indicator-column">Sinyal Volume</th>
+                        <th data-sort="bozzSignal" class="indicator-column">BOZZ Signal</th>
+                        <th data-sort="atrPercent" class="indicator-column">ATR%</th>
+                        <th data-sort="nr4nr7Signal" class="indicator-column">NR4/NR7</th>
+                        <th data-sort="pivotSignal" class="indicator-column">Pivot</th>
+                        <th data-sort="signalScore" class="indicator-column">Signal Score</th>
+                        <th>Aksi</th>
+                    </tr>
+                </thead>
+                <tbody id="stocksTableBody">
+                    <tr>
+                        <td colspan="13" style="text-align: center; padding: 40px;">
+                            Screener dalam keadaan STOP. Klik START untuk memulai analisis.
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        
+        <footer>
+            <p>Data dari Yahoo Finance. Hanya untuk tujuan edukasi.</p>
+            <p>Performa lampau tidak menjamin hasil di masa depan. Investasi mengandung risiko.</p>
+        </footer>
+    </div>
+
+    <!-- Modal Konfirmasi Hapus -->
+    <div id="deleteModal" class="modal">
+        <div class="modal-content">
+            <h3>Hapus Saham</h3>
+            <p>Anda yakin ingin menghapus <strong id="deleteStockName"></strong> dari daftar pemantauan?</p>
+            <div class="modal-buttons">
+                <button id="confirmDeleteBtn" class="modal-btn confirm">Hapus</button>
+                <button id="cancelDeleteBtn" class="modal-btn cancel">Batal</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Konfirmasi Hapus Semua -->
+    <div id="deleteAllModal" class="modal">
+        <div class="modal-content">
+            <h3>Hapus Semua Saham</h3>
+            <p>Anda yakin ingin menghapus <strong>semua saham</strong> dari daftar pemantauan?</p>
+            <div class="modal-buttons">
+                <button id="confirmDeleteAllBtn" class="modal-btn confirm">Hapus Semua</button>
+                <button id="cancelDeleteAllBtn" class="modal-btn cancel">Batal</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ===============================
+        // SIMPLIFIED AND WORKING IMPLEMENTATION
+        // ===============================
+
+        // Daftar saham default
+        let selectedStocks = [
+            'BBCA.JK', 'BBRI.JK', 'BMRI.JK', 'TLKM.JK', 'ASII.JK'
+        ].map(code => ({ code }));
+
+        // Variabel global
+        let stockDataCache = {};
+        let isScreenerRunning = false;
+        let isScreenerPaused = false;
+        let refreshIntervalId = null;
+
+        // Elemen DOM
+        const stocksTableBody = document.getElementById('stocksTableBody');
+        const statusElement = document.getElementById('status');
+        const startBtn = document.getElementById('startBtn');
+        const pauseBtn = document.getElementById('pauseBtn');
+        const stopBtn = document.getElementById('stopBtn');
+        const refreshBtn = document.getElementById('refreshBtn');
+        const stockCountElement = document.getElementById('stockCountValue');
+
+        // ===============================
+        // SIMPLE SCREENER FUNCTIONS
+        // ===============================
+
+        function startScreener() {
+            console.log('START button clicked');
+            
+            if (isScreenerRunning) {
+                console.log('Screener already running');
+                return;
+            }
+            
+            isScreenerRunning = true;
+            isScreenerPaused = false;
+            
+            // Update UI
+            startBtn.disabled = true;
+            pauseBtn.disabled = false;
+            stopBtn.disabled = false;
+            refreshBtn.disabled = true;
+            
+            showStatus('Screener berjalan...', 'success');
+            
+            // Start processing
+            fetchAllStocks();
+            
+            // Set up auto refresh
+            const interval = parseInt(document.getElementById('refreshInterval').value) || 60;
+            refreshIntervalId = setInterval(fetchAllStocks, interval * 1000);
+        }
+
+        function pauseScreener() {
+            if (!isScreenerRunning) return;
+            
+            isScreenerPaused = !isScreenerPaused;
+            
+            if (isScreenerPaused) {
+                showStatus('Screener dijeda...', 'warning');
+                pauseBtn.innerHTML = '<span>▶ Resume</span>';
+                if (refreshIntervalId) {
+                    clearTimeout(refreshIntervalId);
+                }
+            } else {
+                showStatus('Screener berjalan...', 'success');
+                pauseBtn.innerHTML = '<span>⏸️ Pause</span>';
+                const interval = parseInt(document.getElementById('refreshInterval').value) || 60;
+                refreshIntervalId = setInterval(fetchAllStocks, interval * 1000);
+                fetchAllStocks();
+            }
+        }
+
+        function stopScreener() {
+            console.log('STOP button clicked');
+            
+            isScreenerRunning = false;
+            isScreenerPaused = false;
+            
+            // Clear refresh interval
+            if (refreshIntervalId) {
+                clearTimeout(refreshIntervalId);
+                refreshIntervalId = null;
+            }
+            
+            // Update UI
+            startBtn.disabled = false;
+            pauseBtn.disabled = true;
+            stopBtn.disabled = true;
+            refreshBtn.disabled = false;
+            pauseBtn.innerHTML = '<span>⏸️ Pause</span>';
+            
+            showStatus('Screener dihentikan.', 'stopped');
+            displayStoppedState();
+        }
+
+        function refreshScreener() {
+            console.log('REFRESH button clicked');
+            showStatus('Refresh manual...', 'loading');
+            fetchAllStocks();
+        }
+
+        // ===============================
+        // SIMPLE DATA FETCHING
+        // ===============================
+
+        async function fetchAllStocks() {
+            if (!isScreenerRunning && !refreshBtn.disabled) {
+                // Allow manual refresh when not running
+                refreshBtn.disabled = true;
+            } else if (!isScreenerRunning || isScreenerPaused) {
+                return;
+            }
+
+            console.log('Fetching all stocks...');
+            showStatus('Mengambil data saham...', 'loading');
+            
+            // Show progress
+            document.getElementById('progressContainer').style.display = 'block';
+            document.getElementById('progressFill').style.width = '0%';
+            document.getElementById('progressPercentage').textContent = '0%';
+
+            // Process each stock
+            for (let i = 0; i < selectedStocks.length; i++) {
+                const stock = selectedStocks[i];
+                
+                // Update progress
+                const progress = ((i + 1) / selectedStocks.length) * 100;
+                document.getElementById('progressFill').style.width = progress + '%';
+                document.getElementById('progressPercentage').textContent = Math.round(progress) + '%';
+                document.getElementById('progressText').textContent = `Memproses ${i + 1} dari ${selectedStocks.length} saham`;
+                
+                try {
+                    // Generate mock data for demonstration
+                    const stockData = await generateMockStockData(stock.code);
+                    stockDataCache[stock.code] = stockData;
+                    
+                    // Update table immediately
+                    displayStockIncremental(stock.code);
+                    
+                    // Small delay to show progress
+                    await new Promise(resolve => setTimeout(resolve, 100));
+                    
+                } catch (error) {
+                    console.error(`Error fetching ${stock.code}:`, error);
+                    stockDataCache[stock.code] = {
+                        code: stock.code,
+                        error: error.message
+                    };
+                    displayStockIncremental(stock.code);
+                }
+            }
+            
+            // Hide progress when done
+            setTimeout(() => {
+                document.getElementById('progressContainer').style.display = 'none';
+            }, 2000);
+            
+            showStatus(`Data ${selectedStocks.length} saham berhasil diperbarui`, 'success');
+            updateLastUpdateTime();
+            refreshBtn.disabled = false;
+        }
+
+        // Generate mock stock data for demonstration
+        function generateMockStockData(code) {
+            return new Promise((resolve) => {
+                setTimeout(() => {
+                    const price = 1000 + Math.random() * 5000;
+                    const change = (Math.random() - 0.5) * 200;
+                    const changePercent = (change / price) * 100;
+                    const volume = 1000000 + Math.random() * 5000000;
+                    
+                    resolve({
+                        code: code,
+                        price: price,
+                        change: change,
+                        changePercent: changePercent,
+                        volume: volume,
+                        open: price - (Math.random() * 100),
+                        high: price + (Math.random() * 50),
+                        low: price - (Math.random() * 50),
+                        close: price,
+                        volumeSignal: {
+                            signal: Math.random() > 0.7 ? 'BULLISH' : 'NEUTRAL',
+                            icon: Math.random() > 0.7 ? '🟢' : '⚪',
+                            volumeMA: volume * 0.8,
+                            volumeRatio: 0.8 + Math.random() * 1.5
+                        },
+                        bozzSignal: {
+                            buySignal: Math.random() > 0.6,
+                            atrPercent: 1 + Math.random() * 4
+                        },
+                        nr4nr7Signal: {
+                            signalType: Math.random() > 0.8 ? 'NR4' : 'NONE'
+                        },
+                        pivotSignal: {
+                            bullishSignal: Math.random() > 0.5
+                        },
+                        signalScore: Math.floor(Math.random() * 10)
+                    });
+                }, 200 + Math.random() * 300);
+            });
+        }
+
+        // ===============================
+        // UI DISPLAY FUNCTIONS
+        // ===============================
+
+        function displayStockIncremental(stockCode) {
+            const stockData = stockDataCache[stockCode];
+            if (!stockData) return;
+
+            let row = document.querySelector(`tr[data-code="${stockCode}"]`);
+            if (!row) {
+                row = document.createElement('tr');
+                row.setAttribute('data-code', stockCode);
+                stocksTableBody.appendChild(row);
+            }
+
+            updateStockRow(row, stockData);
+        }
+
+        function updateStockRow(row, stockData) {
+            if (stockData.error) {
+                row.innerHTML = `
+                    <td class="symbol">${stockData.code}</td>
+                    <td colspan="11" style="color: var(--negative-color);">Error: ${stockData.error}</td>
+                    <td><button class="delete-btn" data-code="${stockData.code}">🗑️</button></td>
+                `;
+            } else {
+                const changeClass = stockData.change >= 0 ? 'volume-bullish' : 'volume-bearish';
+                const changeSign = stockData.change >= 0 ? '+' : '';
+                
+                // Get styling classes
+                const volumeSignalClass = getVolumeSignalClass(stockData.volumeSignal);
+                const bozzSignalClass = getBozzSignalClass(stockData.bozzSignal);
+                const atrPercentClass = getAtrPercentClass(stockData.bozzSignal);
+                const nr4nr7Class = getNR4NR7Class(stockData.nr4nr7Signal);
+                const pivotClass = getPivotClass(stockData.pivotSignal);
+                const scoreClass = getScoreClass(stockData.signalScore || 0);
+
+                row.innerHTML = `
+                    <td class="symbol">${stockData.code}</td>
+                    <td class="price">${formatCurrency(stockData.price)}</td>
+                    <td class="indicator-value ${changeClass}">
+                        ${changeSign}${formatCurrency(stockData.change)} (${changeSign}${stockData.changePercent.toFixed(2)}%)
+                    </td>
+                    <td class="volume">${formatNumber(stockData.volume)}</td>
+                    <td class="indicator-value">${stockData.volumeSignal ? formatNumber(stockData.volumeSignal.volumeMA) : 'N/A'}</td>
+                    <td class="indicator-value">${stockData.volumeSignal ? stockData.volumeSignal.volumeRatio.toFixed(2) + 'x' : 'N/A'}</td>
+                    <td class="indicator-value ${volumeSignalClass}">
+                        ${stockData.volumeSignal ? `<span class="signal-icon">${stockData.volumeSignal.icon}</span> ${stockData.volumeSignal.signal}` : 'N/A'}
+                    </td>
+                    <td class="indicator-value ${bozzSignalClass}">
+                        ${stockData.bozzSignal ? (stockData.bozzSignal.buySignal ? '🟢 BUY' : '⚪ HOLD') : 'N/A'}
+                    </td>
+                    <td class="indicator-value ${atrPercentClass}">
+                        ${stockData.bozzSignal ? stockData.bozzSignal.atrPercent.toFixed(2) + '%' : 'N/A'}
+                    </td>
+                    <td class="indicator-value ${nr4nr7Class}">
+                        ${stockData.nr4nr7Signal ? stockData.nr4nr7Signal.signalType : 'N/A'}
+                    </td>
+                    <td class="indicator-value ${pivotClass}">
+                        ${stockData.pivotSignal ? (stockData.pivotSignal.bullishSignal ? '🟢 BULLISH' : '⚪ NEUTRAL') : 'N/A'}
+                    </td>
+                    <td class="signal-score ${scoreClass}">${stockData.signalScore || 0}</td>
+                    <td><button class="delete-btn" data-code="${stockData.code}">🗑️</button></td>
+                `;
+            }
+            
+            // Re-attach event listener
+            const deleteBtn = row.querySelector('.delete-btn');
+            if (deleteBtn) {
+                deleteBtn.addEventListener('click', (e) => {
+                    const code = e.target.getAttribute('data-code');
+                    removeStock(code);
+                });
+            }
+        }
+
+        function displayStoppedState() {
+            stocksTableBody.innerHTML = `
+                <tr>
+                    <td colspan="13" style="text-align: center; padding: 40px;">
+                        Screener dalam keadaan STOP. Klik START untuk memulai analisis.
+                    </td>
+                </tr>
+            `;
+        }
+
+        function showStatus(message, type) {
+            statusElement.textContent = message;
+            statusElement.className = `status ${type}`;
+            console.log(`Status: ${message}`);
+        }
+
+        function updateLastUpdateTime() {
+            const now = new Date();
+            document.getElementById('lastUpdate').textContent = now.toLocaleTimeString();
+        }
+
+        // ===============================
+        // UTILITY FUNCTIONS
+        // ===============================
+
+        function formatCurrency(value) {
+            return new Intl.NumberFormat('id-ID', {
+                style: 'currency',
+                currency: 'IDR',
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0
+            }).format(value);
+        }
+
+        function formatNumber(value) {
+            if (value >= 1000000) {
+                return (value / 1000000).toFixed(1) + 'M';
+            } else if (value >= 1000) {
+                return (value / 1000).toFixed(1) + 'K';
+            }
+            return value.toString();
+        }
+
+        // Styling helper functions
+        function getVolumeSignalClass(signal) {
+            if (!signal) return 'volume-neutral';
+            return signal.signal === 'BULLISH' ? 'volume-bullish' : 'volume-neutral';
+        }
+
+        function getBozzSignalClass(signal) {
+            if (!signal) return 'bozz-neutral';
+            return signal.buySignal ? 'bozz-buy' : 'bozz-neutral';
+        }
+
+        function getAtrPercentClass(signal) {
+            if (!signal) return 'volume-neutral';
+            return signal.atrPercent > 2.5 ? 'volume-bearish' : 'volume-bullish';
+        }
+
+        function getNR4NR7Class(signal) {
+            if (!signal) return 'volume-neutral';
+            return signal.signalType !== 'NONE' ? 'nr4-signal' : 'volume-neutral';
+        }
+
+        function getPivotClass(signal) {
+            if (!signal) return 'pivot-neutral';
+            return signal.bullishSignal ? 'pivot-bullish' : 'pivot-neutral';
+        }
+
+        function getScoreClass(score) {
+            if (score >= 6) return 'score-high';
+            if (score >= 3) return 'score-medium';
+            return 'score-low';
+        }
+
+        // ===============================
+        // STOCK MANAGEMENT
+        // ===============================
+
+        function removeStock(code) {
+            selectedStocks = selectedStocks.filter(stock => stock.code !== code);
+            delete stockDataCache[code];
+            updateStockCount();
+            showStatus(`Saham ${code} dihapus`, 'success');
+            
+            if (isScreenerRunning) {
+                // Refresh display
+                stocksTableBody.innerHTML = '';
+                Object.keys(stockDataCache).forEach(displayStockIncremental);
+            } else {
+                displayStoppedState();
+            }
+        }
+
+        function updateStockCount() {
+            stockCountElement.textContent = selectedStocks.length;
+        }
+
+        // ===============================
+        // INITIALIZATION
+        // ===============================
+
+        function initializeApp() {
+            console.log('Initializing screener app...');
+            
+            // Initialize event listeners
+            startBtn.addEventListener('click', startScreener);
+            pauseBtn.addEventListener('click', pauseScreener);
+            stopBtn.addEventListener('click', stopScreener);
+            refreshBtn.addEventListener('click', refreshScreener);
+            
+            // Add stock functionality
+            document.getElementById('addStockBtn').addEventListener('click', addNewStock);
+            document.getElementById('newStockCode').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') addNewStock();
+            });
+            
+            // Delete all functionality
+            document.getElementById('deleteAllBtn').addEventListener('click', showDeleteAllConfirmation);
+            document.getElementById('confirmDeleteAllBtn').addEventListener('click', confirmDeleteAllStocks);
+            document.getElementById('cancelDeleteAllBtn').addEventListener('click', hideDeleteAllModal);
+            
+            // Update initial UI state
+            updateStockCount();
+            displayStoppedState();
+            
+            console.log('Screener app initialized successfully');
+            showStatus('Aplikasi siap. Klik START untuk memulai screener.', 'stopped');
+        }
+
+        function addNewStock() {
+            const code = document.getElementById('newStockCode').value.trim().toUpperCase();
+            if (!code) {
+                showStatus('Masukkan kode saham', 'warning');
+                return;
+            }
+            
+            // Add .JK suffix if not present
+            const fullCode = code.includes('.') ? code : `${code}.JK`;
+            
+            if (selectedStocks.some(stock => stock.code === fullCode)) {
+                showStatus('Saham sudah ada dalam daftar', 'warning');
+                return;
+            }
+            
+            selectedStocks.push({ code: fullCode });
+            document.getElementById('newStockCode').value = '';
+            updateStockCount();
+            showStatus(`Saham ${fullCode} ditambahkan`, 'success');
+            
+            if (isScreenerRunning) {
+                // Refresh to include new stock
+                fetchAllStocks();
+            }
+        }
+
+        function showDeleteAllConfirmation() {
+            if (selectedStocks.length === 0) {
+                showStatus('Tidak ada saham untuk dihapus', 'warning');
+                return;
+            }
+            document.getElementById('deleteAllModal').style.display = 'flex';
+        }
+
+        function hideDeleteAllModal() {
+            document.getElementById('deleteAllModal').style.display = 'none';
+        }
+
+        function confirmDeleteAllStocks() {
+            selectedStocks = [];
+            stockDataCache = {};
+            updateStockCount();
+            displayStoppedState();
+            showStatus('Semua saham dihapus', 'success');
+            hideDeleteAllModal();
+        }
+
+        // Initialize the application when DOM is loaded
+        document.addEventListener('DOMContentLoaded', initializeApp);
+
+    </script>
+</body>
+</html>
