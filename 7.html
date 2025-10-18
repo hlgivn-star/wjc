@@ -1,0 +1,2286 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multi-Broker Analyzer - Trader Assistant</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        :root {
+            --primary: #1e3a8a;
+            --secondary: #3b82f6;
+            --accent-buy: #10b981;
+            --accent-sell: #ef4444;
+            --accent-alert: #f59e0b;
+            --light: #f0f9ff;
+            --dark: #1e293b;
+            --gray: #64748b;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f8fafc;
+            color: #334155;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+        
+        h1, h2, h3, h4 {
+            color: var(--primary);
+            margin-bottom: 1rem;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            border-left: 4px solid var(--secondary);
+        }
+        
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+        
+        .metric-card {
+            background: white;
+            border-radius: 8px;
+            padding: 1rem;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            text-align: center;
+            border-top: 4px solid var(--secondary);
+        }
+        
+        .metric-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin: 0.5rem 0;
+        }
+        
+        .metric-label {
+            color: var(--gray);
+            font-size: 0.8rem;
+        }
+        
+        .buy-signal {
+            color: var(--accent-buy);
+            font-weight: 600;
+        }
+        
+        .sell-signal {
+            color: var(--accent-sell);
+            font-weight: 600;
+        }
+        
+        .chart-container {
+            background: white;
+            border-radius: 10px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            margin-bottom: 1.5rem;
+            height: 300px;
+        }
+        
+        .heatmap-container {
+            background: white;
+            border-radius: 10px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            margin-bottom: 1.5rem;
+            height: 400px;
+        }
+        
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+            font-size: 0.9rem;
+        }
+        
+        .data-table th, .data-table td {
+            padding: 10px 12px;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        
+        .data-table th {
+            background-color: var(--light);
+            font-weight: 600;
+        }
+        
+        .insight-box {
+            background-color: #fef3c7;
+            border-left: 4px solid var(--accent-alert);
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 0 8px 8px 0;
+        }
+        
+        .alert-box {
+            background-color: #fee2e2;
+            border-left: 4px solid var(--accent-sell);
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 0 8px 8px 0;
+        }
+        
+        .confirmation-box {
+            background-color: #d1fae5;
+            border-left: 4px solid var(--accent-buy);
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 0 8px 8px 0;
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 3rem;
+            padding: 1.5rem;
+            background-color: var(--dark);
+            color: white;
+            border-radius: 8px;
+        }
+        
+        .highlight {
+            background-color: #fef3c7;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-weight: 600;
+        }
+        
+        button {
+            background-color: var(--secondary);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+            margin: 5px;
+        }
+        
+        button:hover {
+            background-color: var(--primary);
+        }
+        
+        button.danger {
+            background-color: var(--accent-sell);
+        }
+        
+        .compact-input-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin: 15px 0;
+        }
+        
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .input-group label {
+            font-weight: 600;
+            color: var(--primary);
+            font-size: 0.9rem;
+        }
+        
+        .file-input, .date-input, .broker-select, .custom-broker-input {
+            padding: 8px 10px;
+            border: 1px solid #cbd5e1;
+            border-radius: 5px;
+            font-size: 0.9rem;
+        }
+        
+        .storage-info {
+            background-color: #e2e8f0;
+            padding: 12px;
+            border-radius: 5px;
+            margin: 12px 0;
+            font-size: 0.85rem;
+            text-align: center;
+        }
+        
+        .progress-section {
+            margin: 1.2rem 0;
+            text-align: center;
+        }
+        
+        .progress-bar {
+            height: 16px;
+            background-color: #e2e8f0;
+            border-radius: 8px;
+            overflow: hidden;
+            margin: 8px auto;
+            max-width: 350px;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent-sell), var(--accent-buy));
+            transition: width 0.5s ease;
+        }
+        
+        .progress-text {
+            text-align: center;
+            font-weight: 600;
+            color: var(--primary);
+            font-size: 0.9rem;
+        }
+        
+        .action-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin: 15px 0;
+            flex-wrap: wrap;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal-content {
+            background-color: white;
+            padding: 1.5rem;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            text-align: center;
+        }
+        
+        .pin-input {
+            padding: 10px;
+            font-size: 1.2rem;
+            text-align: center;
+            margin: 15px 0;
+            border: 2px solid #cbd5e1;
+            border-radius: 5px;
+            width: 150px;
+        }
+        
+        .report-section {
+            background-color: white;
+            padding: 1.5rem;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            margin: 1.5rem 0;
+            page-break-inside: avoid;
+        }
+        
+        .report-header {
+            text-align: center;
+            margin-bottom: 1.5rem;
+            border-bottom: 2px solid var(--secondary);
+            padding-bottom: 1rem;
+        }
+        
+        .report-summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin: 1.2rem 0;
+        }
+        
+        .report-card {
+            background: var(--light);
+            border-radius: 8px;
+            padding: 1rem;
+            text-align: center;
+        }
+        
+        .broker-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin: 12px 0;
+        }
+        
+        .broker-tag {
+            background-color: var(--light);
+            padding: 4px 8px;
+            border-radius: 16px;
+            font-size: 0.75rem;
+            border: 1px solid var(--secondary);
+            cursor: pointer;
+        }
+        
+        .broker-tag.active {
+            background-color: var(--secondary);
+            color: white;
+        }
+        
+        .disclaimer {
+            background-color: #fee2e2;
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 1.2rem 0;
+            font-size: 0.85rem;
+            border-left: 4px solid var(--accent-sell);
+        }
+        
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+        }
+        
+        .comparison-table th, .comparison-table td {
+            padding: 10px;
+            text-align: center;
+            border: 1px solid #e2e8f0;
+        }
+        
+        .comparison-table th {
+            background-color: var(--light);
+            font-weight: 600;
+        }
+        
+        /* Drag & Drop Styles */
+        .upload-zone {
+            border: 2px dashed #cbd5e1;
+            border-radius: 8px;
+            padding: 1.5rem;
+            text-align: center;
+            transition: all 0.3s ease;
+            margin: 12px 0;
+            background-color: #f8fafc;
+        }
+        
+        .upload-zone.dragover {
+            border-color: var(--secondary);
+            background-color: #f0f9ff;
+        }
+        
+        .upload-zone i {
+            font-size: 2.5rem;
+            color: var(--secondary);
+            margin-bottom: 0.8rem;
+        }
+        
+        .upload-zone h3 {
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+            font-size: 1.1rem;
+        }
+        
+        .upload-zone p {
+            color: var(--gray);
+            margin-bottom: 0.8rem;
+            font-size: 0.9rem;
+        }
+        
+        .file-list {
+            margin: 12px 0;
+            max-height: 250px;
+            overflow-y: auto;
+        }
+        
+        .file-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 12px;
+            border: 1px solid #e2e8f0;
+            border-radius: 5px;
+            margin-bottom: 8px;
+            background-color: white;
+            font-size: 0.85rem;
+        }
+        
+        .file-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .file-icon {
+            color: var(--secondary);
+        }
+        
+        .file-details {
+            text-align: left;
+        }
+        
+        .file-name {
+            font-weight: 600;
+            color: var(--primary);
+        }
+        
+        .file-size {
+            font-size: 0.75rem;
+            color: var(--gray);
+        }
+        
+        .file-status {
+            font-size: 0.75rem;
+            padding: 2px 6px;
+            border-radius: 10px;
+        }
+        
+        .status-pending {
+            background-color: #fef3c7;
+            color: #d97706;
+        }
+        
+        .status-processing {
+            background-color: #dbeafe;
+            color: var(--secondary);
+        }
+        
+        .status-success {
+            background-color: #d1fae5;
+            color: var(--accent-buy);
+        }
+        
+        .status-error {
+            background-color: #fee2e2;
+            color: var(--accent-sell);
+        }
+        
+        .batch-progress {
+            margin: 12px 0;
+        }
+        
+        .progress-info {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+            font-size: 0.85rem;
+        }
+        
+        .upload-summary {
+            margin-top: 15px;
+            padding: 12px;
+            background-color: #f0f9ff;
+            border-radius: 8px;
+            font-size: 0.85rem;
+        }
+        
+        .summary-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+        }
+        
+        /* Legal Information Styles */
+        .legal-section {
+            background-color: white;
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            border-left: 4px solid var(--accent-alert);
+        }
+        
+        .legal-content {
+            max-height: 200px;
+            overflow-y: auto;
+            padding: 1rem;
+            background-color: #f8fafc;
+            border-radius: 5px;
+            margin: 1rem 0;
+            font-size: 0.8rem;
+            line-height: 1.5;
+        }
+        
+        .legal-content h4 {
+            margin-top: 1rem;
+            margin-bottom: 0.5rem;
+            color: var(--primary);
+        }
+        
+        .legal-content p {
+            margin-bottom: 0.8rem;
+        }
+        
+        .legal-content ul {
+            margin-left: 1.5rem;
+            margin-bottom: 0.8rem;
+        }
+        
+        .legal-footer {
+            text-align: center;
+            margin-top: 2rem;
+            padding: 1rem;
+            background-color: var(--dark);
+            color: white;
+            border-radius: 8px;
+            font-size: 0.8rem;
+        }
+        
+        .copyright {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+        
+        @media print {
+            .no-print {
+                display: none !important;
+            }
+            
+            body {
+                background-color: white;
+            }
+            
+            .card, .report-section {
+                box-shadow: none;
+                border: 1px solid #e2e8f0;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .compact-input-section {
+                grid-template-columns: 1fr;
+            }
+            
+            .file-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 8px;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            button {
+                width: 100%;
+                max-width: 250px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Multi-Broker Analyzer</h1>
+            <p>Analisis Komprehensif untuk Trading Saham</p>
+        </header>
+        
+        <section class="card no-print">
+            <h2>Input Data & Konfigurasi</h2>
+            
+            <div class="compact-input-section">
+                <div class="input-group">
+                    <label for="dateInput">Tanggal Transaksi:</label>
+                    <input type="date" id="dateInput" class="date-input">
+                </div>
+                
+                <div class="input-group">
+                    <label for="brokerSelect">Broker Utama:</label>
+                    <select id="brokerSelect" class="broker-select">
+                        <option value="MG">MG</option>
+                        <option value="AK">AK</option>
+                        <option value="YB">YB</option>
+                        <option value="ZP">ZP</option>
+                        <option value="CC">CC</option>
+                        <option value="custom">Custom...</option>
+                    </select>
+                    <input type="text" id="customBrokerInput" class="custom-broker-input" placeholder="Kode broker" style="display: none;">
+                </div>
+            </div>
+            
+            <div class="input-group">
+                <label>Broker Terdeteksi:</label>
+                <div class="broker-tags" id="brokerTags">
+                    <div class="broker-tag active">MG</div>
+                </div>
+            </div>
+            
+            <!-- Drag & Drop Upload Zone -->
+            <div class="upload-zone" id="uploadZone">
+                <i>📁</i>
+                <h3>Upload File Data Transaksi</h3>
+                <p>Drag & drop file .txt atau klik untuk memilih</p>
+                <p><small>Maksimal 10 file, masing-masing 10MB</small></p>
+                <input type="file" id="fileInput" accept=".txt" multiple style="display: none;">
+                <button type="button" id="browseFilesBtn">Pilih File</button>
+            </div>
+            
+            <!-- File List -->
+            <div class="file-list" id="fileList"></div>
+            
+            <!-- Batch Progress -->
+            <div class="batch-progress" id="batchProgress" style="display: none;">
+                <div class="progress-info">
+                    <span>Progress Upload:</span>
+                    <span id="progressPercent">0%</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="batchProgressFill" style="width: 0%"></div>
+                </div>
+            </div>
+            
+            <!-- Upload Summary -->
+            <div class="upload-summary" id="uploadSummary" style="display: none;"></div>
+            
+            <div class="storage-info">
+                <div id="storageStatus">Memuat status penyimpanan...</div>
+                <div id="progressText">0/7 hari terkumpul</div>
+                <div id="brokerStatus">Broker tersedia: MG</div>
+            </div>
+            
+            <div class="progress-section">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+                </div>
+                <p id="analysisStatus" class="alert-signal">Butuh minimal 7 hari data untuk analisis</p>
+            </div>
+            
+            <div class="action-buttons">
+                <button id="analyzeBtn" disabled>Analisis Data</button>
+                <button id="compareBtn" disabled>Analisis Komparatif</button>
+                <button id="exportBtn" disabled>Ekspor Laporan</button>
+                <button id="resetBtn" class="danger">Reset Data</button>
+            </div>
+        </section>
+        
+        <section id="analysisSection" style="display: none;">
+            <!-- Analysis content remains the same -->
+            <div class="report-section" id="reportContent">
+                <div class="report-header">
+                    <h2>Laporan Analisis Broker <span id="mainBrokerName">MG</span></h2>
+                    <p id="reportDate">Tanggal Analisis: -</p>
+                    <p id="brokerSubtitle">Analisis utama dengan highlight broker relevan</p>
+                </div>
+                
+                <div class="disclaimer">
+                    <h4>⚠️ Disclaimer Penting</h4>
+                    <p>Laporan ini hanya untuk tujuan edukasi dan bukan rekomendasi investasi. 
+                    Data dan analisis tidak menjamin keakuratan atau profitabilitas. 
+                    Selalu lakukan penelitian independen sebelum mengambil keputusan investasi.</p>
+                </div>
+                
+                <div class="card">
+                    <h3>📊 Ringkasan Aktivitas Broker Utama</h3>
+                    <div class="metrics-grid" id="dailyMetrics">
+                        <!-- Metrics akan diisi oleh JavaScript -->
+                    </div>
+                    
+                    <div class="insight-box">
+                        <h4>📈 Insight Utama</h4>
+                        <p id="mainInsight">MG menunjukkan pola akumulasi dengan fokus pada level harga tertentu.</p>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <h3>🔥 Heatmap Aktivitas Broker</h3>
+                    <div class="heatmap-container">
+                        <canvas id="brokerHeatmap"></canvas>
+                    </div>
+                    <p><em>Heatmap menunjukkan aktivitas berbagai broker sepanjang hari trading</em></p>
+                </div>
+                
+                <div class="card">
+                    <h3>📈 Grafik Aktivitas Harian</h3>
+                    <div class="chart-container">
+                        <canvas id="timingChart"></canvas>
+                    </div>
+                    <p><em>Grafik menunjukkan aktivitas beli (hijau) dan jual (merah) broker utama sepanjang hari</em></p>
+                </div>
+                
+                <div class="card">
+                    <h3>🎯 Level Harga Penting</h3>
+                    <div class="chart-container">
+                        <canvas id="priceLevelChart"></canvas>
+                    </div>
+                    <p><em>Level harga dimana broker utama paling aktif melakukan akumulasi (hijau) atau distribusi (merah)</em></p>
+                </div>
+                
+                <div class="card">
+                    <h3>🔄 Konfirmasi Multi-Broker</h3>
+                    <div id="confirmationContainer">
+                        <!-- Konfirmasi dari broker lain akan diisi oleh JavaScript -->
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <h3>🔍 Rekomendasi Trading</h3>
+                    <div id="alertContainer">
+                        <!-- Alerts akan diisi oleh JavaScript -->
+                    </div>
+                    
+                    <div class="report-summary">
+                        <div class="report-card">
+                            <h4>Pattern Detection</h4>
+                            <p id="patternDetection">Menganalisis pola trading broker utama...</p>
+                        </div>
+                        <div class="report-card">
+                            <h4>Action Plan</h4>
+                            <p id="tradingRecommendation">Berdasarkan analisis data...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="action-buttons no-print">
+                <button id="printBtn">Cetak Laporan</button>
+                <button id="exportPdfBtn">Export PDF</button>
+            </div>
+        </section>
+        
+        <!-- Legal Information Section -->
+        <section class="legal-section no-print">
+            <h3>📜 Informasi Legal & Hak Cipta</h3>
+            <div class="legal-content">
+                <h4>Pernyataan Hak Cipta</h4>
+                <p>Program "Multi-Broker Analyzer" merupakan karya intelektual yang dilindungi oleh undang-undang hak cipta. Seluruh kode, algoritma, konsep, dan metodologi analisis dalam program ini adalah hak milik eksklusif pembuatnya.</p>
+                
+                <h4>Pembuat & Pengembang</h4>
+                <p><strong>Dikembangkan oleh:</strong> Kari Bandaro</p>
+                <p><strong>Kontributor AI:</strong> OpenAI GPT-4, Claude AI, dan teknologi AI lainnya yang membantu dalam pengembangan konsep dan implementasi.</p>
+                
+                <h4>Lisensi & Penggunaan</h4>
+                <p>Program ini disediakan untuk penggunaan pribadi dan non-komersial. Anda diperbolehkan:</p>
+                <ul>
+                    <li>Menggunakan program untuk analisis trading pribadi</li>
+                    <li>Mempelajari konsep dan metodologi yang diterapkan</li>
+                    <li>Menggunakan hasil analisis untuk keputusan trading sendiri</li>
+                </ul>
+                
+                <p>Dengan tegas dilarang:</p>
+                <ul>
+                    <li>Memperbanyak, mendistribusikan, atau menjual program ini tanpa izin tertulis</li>
+                    <li>Menggunakan kode sumber atau algoritma untuk produk komersial</li>
+                    <li>Melakukan reverse engineering atau dekompilasi program</li>
+                    <li>Mengklaim program atau metodologi sebagai karya sendiri</li>
+                </ul>
+                
+                <h4>Disclaimer Lengkap</h4>
+                <p>Program ini disediakan "sebagaimana adanya" tanpa jaminan apapun, baik tersurat maupun tersirat. Pembuat tidak bertanggung jawab atas:</p>
+                <ul>
+                    <li>Kerugian finansial atau kehilangan yang timbul dari penggunaan program</li>
+                    <li>Keakuratan data atau analisis yang dihasilkan</li>
+                    <li>Keputusan trading yang dibuat berdasarkan analisis program</li>
+                </ul>
+                
+                <h4>Perlindungan Hukum</h4>
+                <p>Segala bentuk pelanggaran hak cipta akan ditindak sesuai dengan undang-undang yang berlaku. Program ini dilindungi oleh:</p>
+                <ul>
+                    <li>Undang-Undang Hak Cipta Republik Indonesia</li>
+                    <li>Konvensi Bern tentang Perlindungan Karya Sastra dan Seni</li>
+                    <li>Perjanjian Internasional tentang Hak Kekayaan Intelektual</li>
+                </ul>
+                
+                <h4>Kontak & Izin</h4>
+                <p>Untuk penggunaan komersial, kemitraan, atau pertanyaan lain, harap hubungi pembuat melalui saluran resmi.</p>
+            </div>
+        </section>
+        
+        <footer class="legal-footer no-print">
+            <p class="copyright">© 2024 Multi-Broker Analyzer. Hak Cipta Dilindungi Undang-Undang.</p>
+            <p>Dikembangkan oleh Kari Bandaro | Kontributor: OpenAI GPT-4, Claude AI</p>
+            <p>Program ini untuk penggunaan edukasional non-komersial. Dilarang memperbanyak tanpa izin.</p>
+        </footer>
+    </div>
+
+    <!-- Reset Confirmation Modal -->
+    <div class="modal" id="resetModal">
+        <div class="modal-content">
+            <h3>Reset Semua Data</h3>
+            <p>Masukkan PIN (1234) untuk mengonfirmasi:</p>
+            <input type="password" class="pin-input" id="pinInput" maxlength="4">
+            <div class="action-buttons">
+                <button id="confirmResetBtn">Konfirmasi</button>
+                <button id="cancelResetBtn">Batal</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Upload Summary Modal -->
+    <div class="modal" id="uploadSummaryModal">
+        <div class="modal-content">
+            <h3>Upload Selesai</h3>
+            <div id="uploadSummaryContent">
+                <!-- Summary content will be inserted here -->
+            </div>
+            <div class="action-buttons">
+                <button id="closeSummaryBtn">Tutup</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ===============================
+        // KONFIGURASI & KONSTANTA
+        // ===============================
+        
+        const STORAGE_KEY = 'multi-broker-data';
+        const BROKER_LIST_KEY = 'custom-brokers';
+        const MAX_DAYS = 55;
+        const MIN_DAYS_FOR_ANALYSIS = 7;
+        const RESET_PIN = '1234';
+        
+        // Upload constraints
+        const MAX_FILES = 10;
+        const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB in bytes
+        
+        const DEFAULT_BROKERS = ['MG', 'AK', 'YB', 'ZP', 'CC'];
+        
+        let transactionData = [];
+        let selectedDate = null;
+        let selectedBroker = 'MG';
+        let customBrokers = [];
+        let availableBrokers = new Set(['MG']);
+        let uploadQueue = [];
+        let isUploading = false;
+
+        // ===============================
+        // MULTIPLE FILE UPLOAD FUNCTIONS
+        // ===============================
+        
+        function initializeUploadZone() {
+            const uploadZone = document.getElementById('uploadZone');
+            const fileInput = document.getElementById('fileInput');
+            const browseFilesBtn = document.getElementById('browseFilesBtn');
+            
+            // Click to select files
+            browseFilesBtn.addEventListener('click', () => {
+                fileInput.click();
+            });
+            
+            uploadZone.addEventListener('click', (e) => {
+                if (e.target !== browseFilesBtn) {
+                    fileInput.click();
+                }
+            });
+            
+            // Drag and drop events
+            uploadZone.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                uploadZone.classList.add('dragover');
+            });
+            
+            uploadZone.addEventListener('dragleave', () => {
+                uploadZone.classList.remove('dragover');
+            });
+            
+            uploadZone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                uploadZone.classList.remove('dragover');
+                
+                const files = Array.from(e.dataTransfer.files);
+                handleFiles(files);
+            });
+            
+            // File input change
+            fileInput.addEventListener('change', (e) => {
+                const files = Array.from(e.target.files);
+                handleFiles(files);
+                // Reset file input
+                fileInput.value = '';
+            });
+        }
+        
+        function handleFiles(files) {
+            // Validate files
+            const validFiles = validateFiles(files);
+            
+            if (validFiles.length === 0) {
+                return;
+            }
+            
+            // Add to upload queue
+            uploadQueue = uploadQueue.concat(validFiles);
+            
+            // Update file list
+            updateFileList();
+            
+            // Start processing if not already uploading
+            if (!isUploading) {
+                processUploadQueue();
+            }
+        }
+        
+        function validateFiles(files) {
+            const validFiles = [];
+            const errors = [];
+            
+            files.forEach(file => {
+                // Check file type
+                if (!file.name.toLowerCase().endsWith('.txt')) {
+                    errors.push(`File "${file.name}" bukan file .txt`);
+                    return;
+                }
+                
+                // Check file size
+                if (file.size > MAX_FILE_SIZE) {
+                    errors.push(`File "${file.name}" terlalu besar (${formatFileSize(file.size)}). Maksimal 10MB.`);
+                    return;
+                }
+                
+                // Check if we've reached max files
+                if (uploadQueue.length + validFiles.length >= MAX_FILES) {
+                    errors.push(`Maksimal ${MAX_FILES} file yang dapat diupload sekaligus`);
+                    return;
+                }
+                
+                // Check for duplicates
+                const isDuplicate = uploadQueue.some(f => f.name === file.name) || 
+                                   validFiles.some(f => f.name === file.name);
+                
+                if (isDuplicate) {
+                    errors.push(`File "${file.name}" sudah ada dalam antrian`);
+                    return;
+                }
+                
+                validFiles.push(file);
+            });
+            
+            // Show errors if any
+            if (errors.length > 0) {
+                alert(`Beberapa file tidak valid:\n\n${errors.join('\n')}`);
+            }
+            
+            return validFiles;
+        }
+        
+        function updateFileList() {
+            const fileList = document.getElementById('fileList');
+            fileList.innerHTML = '';
+            
+            if (uploadQueue.length === 0) {
+                fileList.style.display = 'none';
+                return;
+            }
+            
+            fileList.style.display = 'block';
+            
+            uploadQueue.forEach((file, index) => {
+                const fileItem = document.createElement('div');
+                fileItem.className = 'file-item';
+                fileItem.dataset.index = index;
+                
+                const fileInfo = document.createElement('div');
+                fileInfo.className = 'file-info';
+                
+                const fileIcon = document.createElement('div');
+                fileIcon.className = 'file-icon';
+                fileIcon.innerHTML = '📄';
+                
+                const fileDetails = document.createElement('div');
+                fileDetails.className = 'file-details';
+                
+                const fileName = document.createElement('div');
+                fileName.className = 'file-name';
+                fileName.textContent = file.name;
+                
+                const fileSize = document.createElement('div');
+                fileSize.className = 'file-size';
+                fileSize.textContent = formatFileSize(file.size);
+                
+                fileDetails.appendChild(fileName);
+                fileDetails.appendChild(fileSize);
+                
+                fileInfo.appendChild(fileIcon);
+                fileInfo.appendChild(fileDetails);
+                
+                const fileStatus = document.createElement('div');
+                fileStatus.className = 'file-status';
+                
+                if (file.status === 'processing') {
+                    fileStatus.className = 'file-status status-processing';
+                    fileStatus.textContent = 'Memproses...';
+                } else if (file.status === 'success') {
+                    fileStatus.className = 'file-status status-success';
+                    fileStatus.textContent = 'Berhasil';
+                } else if (file.status === 'error') {
+                    fileStatus.className = 'file-status status-error';
+                    fileStatus.textContent = file.error || 'Error';
+                } else {
+                    fileStatus.className = 'file-status status-pending';
+                    fileStatus.textContent = 'Menunggu';
+                }
+                
+                fileItem.appendChild(fileInfo);
+                fileItem.appendChild(fileStatus);
+                
+                fileList.appendChild(fileItem);
+            });
+        }
+        
+        async function processUploadQueue() {
+            if (isUploading || uploadQueue.length === 0) {
+                return;
+            }
+            
+            isUploading = true;
+            const batchProgress = document.getElementById('batchProgress');
+            const batchProgressFill = document.getElementById('batchProgressFill');
+            const progressPercent = document.getElementById('progressPercent');
+            
+            batchProgress.style.display = 'block';
+            
+            let processedCount = 0;
+            let successCount = 0;
+            let errorCount = 0;
+            
+            // Process files sequentially
+            for (let i = 0; i < uploadQueue.length; i++) {
+                const file = uploadQueue[i];
+                file.status = 'processing';
+                updateFileList();
+                
+                try {
+                    await processFile(file);
+                    file.status = 'success';
+                    successCount++;
+                } catch (error) {
+                    file.status = 'error';
+                    file.error = error.message;
+                    errorCount++;
+                }
+                
+                processedCount++;
+                
+                // Update progress
+                const progress = (processedCount / uploadQueue.length) * 100;
+                batchProgressFill.style.width = `${progress}%`;
+                progressPercent.textContent = `${Math.round(progress)}%`;
+                
+                updateFileList();
+            }
+            
+            // Show summary
+            showUploadSummary(successCount, errorCount);
+            
+            // Reset queue
+            uploadQueue = [];
+            isUploading = false;
+            batchProgress.style.display = 'none';
+            
+            // Update storage status
+            updateStorageStatus();
+            updateProgress();
+        }
+        
+        function processFile(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                
+                reader.onload = function(e) {
+                    try {
+                        const content = e.target.result;
+                        const { date, brokersData } = parseTransactionData(content, file.name);
+                        
+                        // Save to localStorage
+                        addTransactionData(date, brokersData);
+                        
+                        resolve();
+                    } catch (error) {
+                        reject(new Error(`Gagal memproses file: ${error.message}`));
+                    }
+                };
+                
+                reader.onerror = function() {
+                    reject(new Error('Gagal membaca file'));
+                };
+                
+                reader.readAsText(file);
+            });
+        }
+        
+        function showUploadSummary(successCount, errorCount) {
+            const uploadSummary = document.getElementById('uploadSummary');
+            const uploadSummaryContent = document.getElementById('uploadSummaryContent');
+            const uploadSummaryModal = document.getElementById('uploadSummaryModal');
+            
+            let summaryHTML = `
+                <div class="summary-item">
+                    <span>File berhasil diproses:</span>
+                    <span class="buy-signal">${successCount}</span>
+                </div>
+            `;
+            
+            if (errorCount > 0) {
+                summaryHTML += `
+                    <div class="summary-item">
+                        <span>File gagal diproses:</span>
+                        <span class="sell-signal">${errorCount}</span>
+                    </div>
+                `;
+            }
+            
+            uploadSummaryContent.innerHTML = summaryHTML;
+            uploadSummaryModal.style.display = 'flex';
+            
+            // Also update the inline summary
+            if (errorCount === 0) {
+                uploadSummary.innerHTML = `
+                    <div class="summary-item">
+                        <span>✅ Upload berhasil:</span>
+                        <span>${successCount} file diproses</span>
+                    </div>
+                `;
+            } else {
+                uploadSummary.innerHTML = `
+                    <div class="summary-item">
+                        <span>⚠️ Upload selesai dengan error:</span>
+                        <span>${successCount} berhasil, ${errorCount} gagal</span>
+                    </div>
+                `;
+            }
+            
+            uploadSummary.style.display = 'block';
+        }
+        
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+        
+        // ===============================
+        // MANAJEMEN DATA & LOCAL STORAGE
+        // ===============================
+        
+        function loadFromLocalStorage() {
+            const stored = localStorage.getItem(STORAGE_KEY);
+            return stored ? JSON.parse(stored) : {};
+        }
+        
+        function loadCustomBrokers() {
+            const stored = localStorage.getItem(BROKER_LIST_KEY);
+            return stored ? JSON.parse(stored) : [];
+        }
+        
+        function saveToLocalStorage(data) {
+            const dates = Object.keys(data).sort();
+            if (dates.length > MAX_DAYS) {
+                const datesToRemove = dates.slice(0, dates.length - MAX_DAYS);
+                datesToRemove.forEach(date => {
+                    delete data[date];
+                });
+            }
+            
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+            updateStorageStatus();
+            updateProgress();
+        }
+        
+        function saveCustomBrokers(brokers) {
+            localStorage.setItem(BROKER_LIST_KEY, JSON.stringify(brokers));
+        }
+        
+        function addTransactionData(date, brokersData) {
+            const data = loadFromLocalStorage();
+            
+            if (!data[date]) {
+                data[date] = {};
+            }
+            
+            // Simpan data untuk setiap broker
+            Object.keys(brokersData).forEach(broker => {
+                // If broker data already exists for this date, merge transactions
+                if (data[date][broker]) {
+                    // Create a map of existing transactions to avoid duplicates
+                    const existingTransactionsMap = new Map();
+                    data[date][broker].transactions.forEach(t => {
+                        const key = `${t.time}-${t.stock}-${t.price}-${t.quantity}-${t.buyerCode}-${t.sellerCode}`;
+                        existingTransactionsMap.set(key, t);
+                    });
+                    
+                    // Add new transactions, avoiding duplicates
+                    brokersData[broker].forEach(newT => {
+                        const key = `${newT.time}-${newT.stock}-${newT.price}-${newT.quantity}-${newT.buyerCode}-${newT.sellerCode}`;
+                        if (!existingTransactionsMap.has(key)) {
+                            data[date][broker].transactions.push(newT);
+                        }
+                    });
+                    
+                    // Update timestamp
+                    data[date][broker].timestamp = new Date().toISOString();
+                } else {
+                    // Create new broker entry
+                    data[date][broker] = {
+                        transactions: brokersData[broker],
+                        timestamp: new Date().toISOString()
+                    };
+                }
+                
+                // Tambahkan broker ke daftar tersedia
+                availableBrokers.add(broker);
+            });
+            
+            saveToLocalStorage(data);
+            updateBrokerTags();
+            return data;
+        }
+        
+        function getAllDates() {
+            const data = loadFromLocalStorage();
+            return Object.keys(data).sort();
+        }
+        
+        function clearAllData() {
+            localStorage.removeItem(STORAGE_KEY);
+            updateStorageStatus();
+            updateProgress();
+            hideAnalysisSection();
+            alert('Semua data telah direset');
+        }
+        
+        function updateStorageStatus() {
+            const data = loadFromLocalStorage();
+            const dates = Object.keys(data);
+            
+            let totalTransactions = 0;
+            let allBrokers = new Set();
+            
+            dates.forEach(date => {
+                Object.keys(data[date]).forEach(broker => {
+                    allBrokers.add(broker);
+                    totalTransactions += data[date][broker].transactions.length;
+                });
+            });
+            
+            document.getElementById('storageStatus').textContent = 
+                `Data tersimpan: ${dates.length} hari, ${totalTransactions} transaksi`;
+                
+            document.getElementById('brokerStatus').textContent = 
+                `Broker tersedia: ${Array.from(allBrokers).sort().join(', ')}`;
+        }
+        
+        function updateProgress() {
+            const data = loadFromLocalStorage();
+            const daysCount = Object.keys(data).length;
+            const progressPercent = Math.min(100, (daysCount / MIN_DAYS_FOR_ANALYSIS) * 100);
+            
+            document.getElementById('progressFill').style.width = `${progressPercent}%`;
+            document.getElementById('progressText').textContent = `${daysCount}/${MIN_DAYS_FOR_ANALYSIS} hari terkumpul`;
+            
+            const analysisStatus = document.getElementById('analysisStatus');
+            const analyzeBtn = document.getElementById('analyzeBtn');
+            const compareBtn = document.getElementById('compareBtn');
+            const exportBtn = document.getElementById('exportBtn');
+            
+            if (daysCount >= MIN_DAYS_FOR_ANALYSIS) {
+                analysisStatus.textContent = "✓ Data cukup untuk analisis";
+                analysisStatus.className = "buy-signal";
+                analyzeBtn.disabled = false;
+                compareBtn.disabled = false;
+                exportBtn.disabled = false;
+            } else {
+                analysisStatus.textContent = `Butuh ${MIN_DAYS_FOR_ANALYSIS} hari data untuk analisis`;
+                analysisStatus.className = "alert-signal";
+                analyzeBtn.disabled = true;
+                compareBtn.disabled = true;
+                exportBtn.disabled = true;
+            }
+        }
+        
+        function hideAnalysisSection() {
+            document.getElementById('analysisSection').style.display = 'none';
+        }
+        
+        // ===============================
+        // MANAJEMEN BROKER
+        // ===============================
+        
+        function updateBrokerTags() {
+            const brokerTagsContainer = document.getElementById('brokerTags');
+            brokerTagsContainer.innerHTML = '';
+            
+            const allBrokers = Array.from(availableBrokers).sort();
+            
+            allBrokers.forEach(broker => {
+                const tag = document.createElement('div');
+                tag.className = `broker-tag ${broker === selectedBroker ? 'active' : ''}`;
+                tag.textContent = broker;
+                tag.addEventListener('click', () => {
+                    selectBroker(broker);
+                });
+                brokerTagsContainer.appendChild(tag);
+            });
+        }
+        
+        function selectBroker(broker) {
+            selectedBroker = broker;
+            updateBrokerTags();
+            
+            // Update dropdown jika broker ada di daftar
+            const brokerSelect = document.getElementById('brokerSelect');
+            const customInput = document.getElementById('customBrokerInput');
+            
+            if (DEFAULT_BROKERS.includes(broker) || customBrokers.includes(broker)) {
+                brokerSelect.value = broker;
+                customInput.style.display = 'none';
+            } else {
+                brokerSelect.value = 'custom';
+                customInput.value = broker;
+                customInput.style.display = 'block';
+                
+                // Tambahkan ke custom brokers jika belum ada
+                if (!customBrokers.includes(broker)) {
+                    customBrokers.push(broker);
+                    saveCustomBrokers(customBrokers);
+                }
+            }
+        }
+        
+        // ===============================
+        // PARSING DATA & EKSTRAKSI TANGGAL
+        // ===============================
+        
+        function parseDateFromFilename(filename) {
+            // Format: bbca_10oktober2025.txt
+            const regex = /(\d{1,2})(januari|februari|maret|april|mei|juni|juli|agustus|september|oktober|november|desember)(\d{4})/i;
+            const match = filename.match(regex);
+            
+            if (match) {
+                const day = parseInt(match[1]);
+                const month = monthNameToNumber(match[2].toLowerCase());
+                const year = parseInt(match[3]);
+                
+                if (month !== -1) {
+                    return `${year}-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
+                }
+            }
+            
+            return null;
+        }
+        
+        function monthNameToNumber(monthName) {
+            const months = {
+                'januari': 1, 'februari': 2, 'maret': 3, 'april': 4,
+                'mei': 5, 'juni': 6, 'juli': 7, 'agustus': 8,
+                'september': 9, 'oktober': 10, 'november': 11, 'desember': 12
+            };
+            
+            return months[monthName] || -1;
+        }
+        
+        function parseTransactionData(text, filename) {
+            const lines = text.split('\n');
+            const brokersData = {};
+            
+            // Prioritaskan tanggal dari input manual
+            let date = selectedDate;
+            
+            // Jika tidak ada tanggal manual, coba ekstrak dari nama file
+            if (!date) {
+                date = parseDateFromFilename(filename);
+            }
+            
+            // Jika masih tidak ada tanggal, gunakan tanggal hari ini
+            if (!date) {
+                date = new Date().toISOString().split('T')[0];
+            }
+            
+            lines.forEach((line, index) => {
+                if (line.trim() === '' || index === 0) return;
+                
+                const parts = line.split('\t');
+                if (parts.length >= 9) {
+                    const buyerCode = parts[6].trim();
+                    const sellerCode = parts[7].trim();
+                    
+                    const transaction = {
+                        time: parts[0].trim(),
+                        stock: parts[1].trim(),
+                        board: parts[2].trim(),
+                        price: parseInt(parts[3].trim().replace(/,/g, '')),
+                        quantity: parseInt(parts[4].trim()),
+                        buyerType: parts[5].trim(),
+                        buyerCode: buyerCode,
+                        sellerCode: sellerCode,
+                        sellerType: parts[8].trim()
+                    };
+                    
+                    // Proses untuk buyer
+                    if (!brokersData[buyerCode]) {
+                        brokersData[buyerCode] = [];
+                    }
+                    
+                    brokersData[buyerCode].push({
+                        ...transaction,
+                        action: 'BUY',
+                        counterparty: sellerCode
+                    });
+                    
+                    // Proses untuk seller
+                    if (!brokersData[sellerCode]) {
+                        brokersData[sellerCode] = [];
+                    }
+                    
+                    brokersData[sellerCode].push({
+                        ...transaction,
+                        action: 'SELL',
+                        counterparty: buyerCode
+                    });
+                }
+            });
+            
+            return { date, brokersData };
+        }
+
+        // ===============================
+        // FUNGSI ANALITIK LANJUT
+        // ===============================
+        
+        function analyzeTiming(transactions) {
+            const hourlyData = {};
+            
+            transactions.forEach(t => {
+                if (t.action === 'OTHER') return;
+                
+                const hour = t.time.split(':')[0];
+                if (!hourlyData[hour]) {
+                    hourlyData[hour] = { buy: 0, sell: 0, count: 0 };
+                }
+                
+                if (t.action === 'BUY') {
+                    hourlyData[hour].buy += t.quantity;
+                } else {
+                    hourlyData[hour].sell += t.quantity;
+                }
+                
+                hourlyData[hour].count++;
+            });
+            
+            return hourlyData;
+        }
+        
+        function analyzePriceLevels(transactions) {
+            const priceLevels = {};
+            
+            transactions.forEach(t => {
+                if (t.action === 'OTHER') return;
+                
+                const price = t.price;
+                if (!priceLevels[price]) {
+                    priceLevels[price] = { buy: 0, sell: 0, count: 0 };
+                }
+                
+                if (t.action === 'BUY') {
+                    priceLevels[price].buy += t.quantity;
+                } else {
+                    priceLevels[price].sell += t.quantity;
+                }
+                
+                priceLevels[price].count++;
+            });
+            
+            return priceLevels;
+        }
+        
+        function detectPatterns(transactions, timingData, priceData) {
+            const patterns = {
+                alerts: [],
+                accumulationZones: [],
+                recommendations: []
+            };
+            
+            // Calculate total volumes
+            let totalBuyVolume = 0;
+            let totalSellVolume = 0;
+            
+            transactions.forEach(t => {
+                if (t.action === 'BUY') totalBuyVolume += t.quantity;
+                if (t.action === 'SELL') totalSellVolume += t.quantity;
+            });
+            
+            // Alert 1: High volume accumulation
+            if (totalBuyVolume > totalSellVolume * 1.5) {
+                patterns.alerts.push({
+                    type: 'ACCUMULATION',
+                    message: `${selectedBroker} melakukan akumulasi signifikan: ${totalBuyVolume.toLocaleString()} lot beli vs ${totalSellVolume.toLocaleString()} lot jual`,
+                    severity: 'HIGH'
+                });
+            }
+            
+            // Alert 2: Large block trades
+            const largeTrades = transactions.filter(t => 
+                (t.action === 'BUY' || t.action === 'SELL') && t.quantity >= 20
+            );
+            
+            if (largeTrades.length > 0) {
+                patterns.alerts.push({
+                    type: 'BLOCK_TRADES',
+                    message: `Terdapat ${largeTrades.length} transaksi besar (≥20 lot) oleh ${selectedBroker}`,
+                    severity: 'MEDIUM'
+                });
+            }
+            
+            // Alert 3: Concentration at specific price levels
+            const topPriceLevels = Object.entries(priceData)
+                .filter(([price, data]) => data.buy > 0)
+                .sort(([_, a], [__, b]) => b.buy - a.buy)
+                .slice(0, 3);
+                
+            if (topPriceLevels.length > 0) {
+                patterns.alerts.push({
+                    type: 'PRICE_CONCENTRATION',
+                    message: `${selectedBroker} terkonsentrasi di level ${topPriceLevels.map(p => p[0]).join(', ')}`,
+                    severity: 'MEDIUM'
+                });
+                
+                patterns.accumulationZones = topPriceLevels.map(p => ({
+                    price: p[0],
+                    volume: p[1].buy
+                }));
+            }
+            
+            // Alert 4: Active trading hours
+            const activeHours = Object.entries(timingData)
+                .filter(([hour, data]) => data.buy + data.sell > 50)
+                .map(([hour, data]) => `${hour}:00`);
+                
+            if (activeHours.length > 0) {
+                patterns.alerts.push({
+                    type: 'ACTIVE_HOURS',
+                    message: `${selectedBroker} paling aktif pada jam ${activeHours.join(', ')}`,
+                    severity: 'LOW'
+                });
+            }
+            
+            // Generate recommendations
+            if (patterns.accumulationZones.length > 0) {
+                const bestLevel = patterns.accumulationZones[0];
+                patterns.recommendations.push(
+                    `Pertimbangkan BELI di sekitar harga ${bestLevel.price} (akumulasi ${selectedBroker}: ${bestLevel.volume} lot)`
+                );
+            }
+            
+            if (totalBuyVolume > totalSellVolume) {
+                patterns.recommendations.push(
+                    `${selectedBroker} lebih banyak BELI (${totalBuyVolume} lot) daripada JUAL (${totalSellVolume} lot) - Bias positif`
+                );
+            } else if (totalSellVolume > totalBuyVolume) {
+                patterns.recommendations.push(
+                    `${selectedBroker} lebih banyak JUAL (${totalSellVolume} lot) daripada BELI (${totalBuyVolume} lot) - Hati-hati`
+                );
+            }
+            
+            return patterns;
+        }
+        
+        function calculateDailyMetrics(transactions, timingData) {
+            let totalVolume = 0;
+            let buyVolume = 0;
+            let sellVolume = 0;
+            let tradeCount = 0;
+            let avgPrice = 0;
+            let priceSum = 0;
+            
+            transactions.forEach(t => {
+                if (t.action === 'OTHER') return;
+                
+                totalVolume += t.quantity;
+                priceSum += t.price * t.quantity;
+                tradeCount++;
+                
+                if (t.action === 'BUY') {
+                    buyVolume += t.quantity;
+                } else {
+                    sellVolume += t.quantity;
+                }
+            });
+            
+            avgPrice = totalVolume > 0 ? Math.round(priceSum / totalVolume) : 0;
+            
+            // Find most active hour
+            let mostActiveHour = 'Tidak ada data';
+            let maxVolume = 0;
+            
+            Object.entries(timingData).forEach(([hour, data]) => {
+                const volume = data.buy + data.sell;
+                if (volume > maxVolume) {
+                    maxVolume = volume;
+                    mostActiveHour = `${hour}:00`;
+                }
+            });
+            
+            return {
+                totalVolume,
+                buyVolume,
+                sellVolume,
+                tradeCount,
+                avgPrice,
+                netVolume: buyVolume - sellVolume,
+                mostActiveHour,
+                buyRatio: totalVolume > 0 ? ((buyVolume / totalVolume) * 100).toFixed(1) : 0
+            };
+        }
+        
+        // ===============================
+        // ANALISIS MULTI-BROKER & KONFIRMASI
+        // ===============================
+        
+        function analyzeBrokerConfirmation(mainBrokerData, allBrokersData, date) {
+            const confirmations = [];
+            const mainBrokerPatterns = detectPatterns(mainBrokerData.transactions, 
+                analyzeTiming(mainBrokerData.transactions), 
+                analyzePriceLevels(mainBrokerData.transactions));
+            
+            // Analisis broker lain untuk konfirmasi
+            Object.keys(allBrokersData[date]).forEach(broker => {
+                if (broker === selectedBroker) return;
+                
+                const brokerData = allBrokersData[date][broker];
+                const brokerPatterns = detectPatterns(brokerData.transactions,
+                    analyzeTiming(brokerData.transactions),
+                    analyzePriceLevels(brokerData.transactions));
+                
+                // Cek kesamaan pola akumulasi
+                const mainAccumulation = mainBrokerPatterns.accumulationZones.map(z => z.price);
+                const brokerAccumulation = brokerPatterns.accumulationZones.map(z => z.price);
+                
+                const commonLevels = mainAccumulation.filter(level => 
+                    brokerAccumulation.includes(level));
+                
+                if (commonLevels.length > 0) {
+                    confirmations.push({
+                        broker: broker,
+                        message: `Mengkonfirmasi akumulasi di level ${commonLevels.join(', ')}`,
+                        confidence: commonLevels.length,
+                        levels: commonLevels
+                    });
+                }
+                
+                // Cek kesamaan net volume
+                const mainMetrics = calculateDailyMetrics(mainBrokerData.transactions, 
+                    analyzeTiming(mainBrokerData.transactions));
+                const brokerMetrics = calculateDailyMetrics(brokerData.transactions,
+                    analyzeTiming(brokerData.transactions));
+                
+                if ((mainMetrics.netVolume > 0 && brokerMetrics.netVolume > 0) ||
+                    (mainMetrics.netVolume < 0 && brokerMetrics.netVolume < 0)) {
+                    confirmations.push({
+                        broker: broker,
+                        message: `Mengkonfirmasi arah market: ${mainMetrics.netVolume > 0 ? 'BULLISH' : 'BEARISH'}`,
+                        confidence: 1,
+                        direction: mainMetrics.netVolume > 0 ? 'BULLISH' : 'BEARISH'
+                    });
+                }
+            });
+            
+            return confirmations;
+        }
+        
+        function generateBrokerHeatmap(allBrokersData, date) {
+            const hours = Array.from({length: 10}, (_, i) => (i + 8).toString().padStart(2, '0')); // 08-17
+            const topBrokers = Array.from(availableBrokers).slice(0, 8); // Ambil 8 broker teratas
+            
+            const datasets = [];
+            const colors = [
+                '#10b981', '#3b82f6', '#f59e0b', '#ef4444',
+                '#8b5cf6', '#06b6d4', '#84cc16', '#f97316'
+            ];
+            
+            topBrokers.forEach((broker, index) => {
+                if (!allBrokersData[date][broker]) return;
+                
+                const timingData = analyzeTiming(allBrokersData[date][broker].transactions);
+                const data = hours.map(hour => {
+                    if (timingData[hour]) {
+                        return timingData[hour].buy + timingData[hour].sell;
+                    }
+                    return 0;
+                });
+                
+                datasets.push({
+                    label: broker,
+                    data: data,
+                    backgroundColor: colors[index % colors.length],
+                    borderColor: colors[index % colors.length],
+                    borderWidth: 1
+                });
+            });
+            
+            return {
+                labels: hours.map(h => h + ':00'),
+                datasets: datasets
+            };
+        }
+        
+        // ===============================
+        // RENDER CHART & VISUALISASI
+        // ===============================
+        
+        function renderTimingChart(timingData) {
+            const ctx = document.getElementById('timingChart').getContext('2d');
+            const hours = Object.keys(timingData).sort();
+            const buyData = hours.map(h => timingData[h].buy);
+            const sellData = hours.map(h => timingData[h].sell);
+            
+            if (window.timingChartInstance) {
+                window.timingChartInstance.destroy();
+            }
+            
+            window.timingChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: hours.map(h => h + ':00'),
+                    datasets: [
+                        {
+                            label: 'Beli oleh ' + selectedBroker,
+                            data: buyData,
+                            backgroundColor: '#10b981',
+                            borderColor: '#10b981',
+                            borderWidth: 1
+                        },
+                        {
+                            label: 'Jual oleh ' + selectedBroker,
+                            data: sellData,
+                            backgroundColor: '#ef4444',
+                            borderColor: '#ef4444',
+                            borderWidth: 1
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Jam Perdagangan'
+                            }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'Volume (lot)'
+                            },
+                            beginAtZero: true
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        }
+                    }
+                }
+            });
+        }
+        
+        function renderPriceLevelChart(priceData) {
+            const ctx = document.getElementById('priceLevelChart').getContext('2d');
+            const prices = Object.keys(priceData).sort((a, b) => a - b);
+            const buyData = prices.map(p => priceData[p].buy);
+            const sellData = prices.map(p => priceData[p].sell);
+            
+            if (window.priceChartInstance) {
+                window.priceChartInstance.destroy();
+            }
+            
+            window.priceChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: prices,
+                    datasets: [
+                        {
+                            label: 'Volume Beli ' + selectedBroker,
+                            data: buyData,
+                            backgroundColor: '#10b981',
+                            borderColor: '#10b981',
+                            borderWidth: 1
+                        },
+                        {
+                            label: 'Volume Jual ' + selectedBroker,
+                            data: sellData,
+                            backgroundColor: '#ef4444',
+                            borderColor: '#ef4444',
+                            borderWidth: 1
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Level Harga'
+                            }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'Volume (lot)'
+                            },
+                            beginAtZero: true
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        }
+                    }
+                }
+            });
+        }
+        
+        function renderBrokerHeatmap(heatmapData) {
+            const ctx = document.getElementById('brokerHeatmap').getContext('2d');
+            
+            if (window.heatmapInstance) {
+                window.heatmapInstance.destroy();
+            }
+            
+            window.heatmapInstance = new Chart(ctx, {
+                type: 'bar',
+                data: heatmapData,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Jam Perdagangan'
+                            },
+                            stacked: true
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'Volume (lot)'
+                            },
+                            beginAtZero: true,
+                            stacked: true
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        }
+                    }
+                }
+            });
+        }
+        
+        // ===============================
+        // RENDER UI & HASIL ANALISIS
+        // ===============================
+        
+        function renderDailyMetrics(metrics, date) {
+            const dailyMetrics = document.getElementById('dailyMetrics');
+            const netClass = metrics.netVolume >= 0 ? 'buy-signal' : 'sell-signal';
+            
+            dailyMetrics.innerHTML = `
+                <div class="metric-card">
+                    <div class="metric-label">Total Volume</div>
+                    <div class="metric-value">${metrics.totalVolume.toLocaleString()} lot</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">Net Volume</div>
+                    <div class="metric-value ${netClass}">${metrics.netVolume.toLocaleString()} lot</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">Rasio Beli</div>
+                    <div class="metric-value">${metrics.buyRatio}%</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">Harga Rata-rata</div>
+                    <div class="metric-value">${metrics.avgPrice}</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">Jam Paling Aktif</div>
+                    <div class="metric-value">${metrics.mostActiveHour}</div>
+                </div>
+            `;
+        }
+        
+        function renderAlerts(patterns, date) {
+            const alertContainer = document.getElementById('alertContainer');
+            let html = '';
+            
+            if (patterns.alerts.length === 0) {
+                html = `<div class="alert-item">Tidak ada alert khusus untuk data yang dianalisis</div>`;
+            } else {
+                patterns.alerts.forEach(alert => {
+                    const severityClass = alert.severity === 'HIGH' ? 'alert-box' : 'insight-box';
+                    html += `
+                        <div class="${severityClass}">
+                            <strong>${alert.type}</strong>: ${alert.message}
+                        </div>
+                    `;
+                });
+            }
+            
+            alertContainer.innerHTML = html;
+            
+            document.getElementById('patternDetection').textContent = 
+                patterns.accumulationZones.length > 0 ? 
+                `${selectedBroker} melakukan akumulasi di level ${patterns.accumulationZones.map(z => z.price).join(', ')}. Pola ini menunjukkan area support potensial.` :
+                'Tidak terdeteksi pola akumulasi yang signifikan. Perhatikan level support dan resistance lainnya.';
+                
+            document.getElementById('tradingRecommendation').textContent = 
+                patterns.recommendations.length > 0 ? 
+                patterns.recommendations.join('. ') : 
+                'Tunggu sinyal yang lebih jelas dari broker sebelum mengambil posisi.';
+        }
+        
+        function renderBrokerConfirmations(confirmations) {
+            const container = document.getElementById('confirmationContainer');
+            
+            if (confirmations.length === 0) {
+                container.innerHTML = `
+                    <div class="insight-box">
+                        <strong>Tidak ada konfirmasi dari broker lain</strong>: 
+                        Sinyal dari ${selectedBroker} tidak dikonfirmasi oleh broker lain.
+                    </div>
+                `;
+                return;
+            }
+            
+            let html = '';
+            const highConfidence = confirmations.filter(c => c.confidence >= 2);
+            const mediumConfidence = confirmations.filter(c => c.confidence === 1);
+            
+            if (highConfidence.length > 0) {
+                html += `
+                    <div class="confirmation-box">
+                        <h4>✅ Konfirmasi Tinggi</h4>
+                        <p>${highConfidence.length} broker mengkonfirmasi sinyal ${selectedBroker}:</p>
+                        <ul>
+                            ${highConfidence.map(c => `<li><strong>${c.broker}</strong>: ${c.message}</li>`).join('')}
+                        </ul>
+                    </div>
+                `;
+            }
+            
+            if (mediumConfidence.length > 0) {
+                html += `
+                    <div class="insight-box">
+                        <h4>⚠️ Konfirmasi Sedang</h4>
+                        <p>${mediumConfidence.length} broker menunjukkan pola serupa:</p>
+                        <ul>
+                            ${mediumConfidence.map(c => `<li><strong>${c.broker}</strong>: ${c.message}</li>`).join('')}
+                        </ul>
+                    </div>
+                `;
+            }
+            
+            container.innerHTML = html;
+        }
+        
+        function updateIntradayInsight(metrics, patterns, confirmations) {
+            const insightElement = document.getElementById('mainInsight');
+            
+            let insight = '';
+            
+            if (metrics.netVolume > 0) {
+                insight += `${selectedBroker} menunjukkan pola <span class="highlight">akumulasi</span> dengan net volume positif ${metrics.netVolume.toLocaleString()} lot. `;
+            } else if (metrics.netVolume < 0) {
+                insight += `${selectedBroker} menunjukkan pola <span class="highlight">distribusi</span> dengan net volume negatif ${Math.abs(metrics.netVolume).toLocaleString()} lot. `;
+            } else {
+                insight += `${selectedBroker} menunjukkan pola <span class="highlight">seimbang</span> antara beli dan jual. `;
+            }
+            
+            if (patterns.accumulationZones.length > 0) {
+                insight += `Fokus akumulasi di level <span class="highlight">${patterns.accumulationZones[0].price}</span>. `;
+            }
+            
+            if (confirmations.length > 0) {
+                insight += `<span class="highlight">${confirmations.length} broker lain</span> mengkonfirmasi sinyal. `;
+            }
+            
+            if (metrics.mostActiveHour !== 'Tidak ada data') {
+                insight += `Paling aktif pada jam <span class="highlight">${metrics.mostActiveHour}</span>.`;
+            }
+            
+            insightElement.innerHTML = insight;
+        }
+        
+        // ===============================
+        // EKSEKUSI ANALISIS UTAMA
+        // ===============================
+        
+        function performAnalysis() {
+            const data = loadFromLocalStorage();
+            const dates = Object.keys(data);
+            
+            if (dates.length === 0) {
+                alert('Tidak ada data untuk dianalisis');
+                return;
+            }
+            
+            // Use the most recent date for analysis
+            const recentDate = dates[dates.length - 1];
+            
+            if (!data[recentDate][selectedBroker]) {
+                alert(`Tidak ada data untuk broker ${selectedBroker} pada tanggal ${recentDate}`);
+                return;
+            }
+            
+            const mainBrokerData = data[recentDate][selectedBroker];
+            const mgTransactions = mainBrokerData.transactions.filter(t => t.action !== 'OTHER');
+            
+            if (mgTransactions.length === 0) {
+                alert(`Tidak ada transaksi ${selectedBroker} dalam data terbaru`);
+                return;
+            }
+            
+            // Perform analysis
+            const timingData = analyzeTiming(mgTransactions);
+            const priceData = analyzePriceLevels(mgTransactions);
+            const patterns = detectPatterns(mgTransactions, timingData, priceData);
+            const metrics = calculateDailyMetrics(mgTransactions, timingData);
+            const confirmations = analyzeBrokerConfirmation(mainBrokerData, data, recentDate);
+            const heatmapData = generateBrokerHeatmap(data, recentDate);
+            
+            // Render results
+            document.getElementById('analysisSection').style.display = 'block';
+            document.getElementById('reportDate').textContent = `Tanggal Analisis: ${recentDate}`;
+            document.getElementById('mainBrokerName').textContent = selectedBroker;
+            document.getElementById('brokerSubtitle').textContent = 
+                `Analisis utama dengan ${confirmations.length} broker mengkonfirmasi`;
+            
+            renderDailyMetrics(metrics, recentDate);
+            renderTimingChart(timingData);
+            renderPriceLevelChart(priceData);
+            renderBrokerHeatmap(heatmapData);
+            renderAlerts(patterns, recentDate);
+            renderBrokerConfirmations(confirmations);
+            updateIntradayInsight(metrics, patterns, confirmations);
+            
+            // Scroll to analysis section
+            document.getElementById('analysisSection').scrollIntoView({ behavior: 'smooth' });
+        }
+        
+        function performComparativeAnalysis() {
+            // Implementasi analisis komparatif lengkap
+            alert('Fitur analisis komparatif akan segera hadir!');
+        }
+        
+        // ===============================
+        // EKSPOR & CETAK LAPORAN
+        // ===============================
+        
+        function exportToPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF('p', 'mm', 'a4');
+            const reportElement = document.getElementById('reportContent');
+            
+            // Add title
+            doc.setFontSize(20);
+            doc.text(`Laporan Analisis Broker ${selectedBroker}`, 105, 20, { align: 'center' });
+            
+            // Add date
+            doc.setFontSize(12);
+            doc.text(document.getElementById('reportDate').textContent, 105, 30, { align: 'center' });
+            
+            // Add disclaimer
+            doc.setFontSize(10);
+            doc.setTextColor(255, 0, 0);
+            doc.text('DISCLAIMER: Laporan ini hanya untuk tujuan edukasi dan bukan rekomendasi investasi.', 105, 40, { align: 'center' });
+            doc.setTextColor(0, 0, 0);
+            
+            let yPosition = 50;
+            
+            // Add metrics summary
+            doc.setFontSize(16);
+            doc.text('Ringkasan Aktivitas Broker', 20, yPosition);
+            yPosition += 10;
+            
+            doc.setFontSize(10);
+            const metrics = document.querySelectorAll('.metric-card');
+            metrics.forEach((metric, index) => {
+                const label = metric.querySelector('.metric-label').textContent;
+                const value = metric.querySelector('.metric-value').textContent;
+                
+                if (index % 2 === 0 && index > 0) {
+                    yPosition += 10;
+                }
+                
+                const xPosition = index % 2 === 0 ? 20 : 110;
+                doc.text(`${label}: ${value}`, xPosition, yPosition);
+                
+                if (index % 2 !== 0) {
+                    yPosition += 10;
+                }
+            });
+            
+            yPosition += 10;
+            
+            // Add insight
+            doc.setFontSize(12);
+            const insight = document.getElementById('mainInsight').textContent;
+            doc.text('Insight Utama:', 20, yPosition);
+            yPosition += 7;
+            doc.setFontSize(10);
+            const splitInsight = doc.splitTextToSize(insight, 170);
+            doc.text(splitInsight, 20, yPosition);
+            yPosition += splitInsight.length * 5 + 10;
+            
+            // Add recommendations
+            doc.setFontSize(12);
+            doc.text('Rekomendasi Trading:', 20, yPosition);
+            yPosition += 7;
+            doc.setFontSize(10);
+            
+            const patternDetection = document.getElementById('patternDetection').textContent;
+            const tradingRecommendation = document.getElementById('tradingRecommendation').textContent;
+            
+            const splitPattern = doc.splitTextToSize(`Pattern: ${patternDetection}`, 170);
+            doc.text(splitPattern, 20, yPosition);
+            yPosition += splitPattern.length * 5 + 5;
+            
+            const splitRecommendation = doc.splitTextToSize(`Action: ${tradingRecommendation}`, 170);
+            doc.text(splitRecommendation, 20, yPosition);
+            yPosition += splitRecommendation.length * 5 + 10;
+            
+            // Add final note
+            doc.setFontSize(10);
+            doc.setTextColor(100);
+            doc.text('Analisis ini berdasarkan data transaksi multiple broker. Selalu gunakan analisis teknikal dan fundamental lainnya sebelum trading.', 20, yPosition);
+            
+            // Save the PDF
+            doc.save(`laporan-analisis-${selectedBroker}.pdf`);
+        }
+        
+        function printReport() {
+            window.print();
+        }
+        
+        // ===============================
+        // MANAJEMEN MODAL
+        // ===============================
+        
+        function showResetModal() {
+            document.getElementById('resetModal').style.display = 'flex';
+            document.getElementById('pinInput').value = '';
+            document.getElementById('pinInput').focus();
+        }
+        
+        function hideResetModal() {
+            document.getElementById('resetModal').style.display = 'none';
+        }
+        
+        function confirmReset() {
+            const pin = document.getElementById('pinInput').value;
+            if (pin === RESET_PIN) {
+                clearAllData();
+                hideResetModal();
+            } else {
+                alert('PIN salah! Data tidak direset.');
+                hideResetModal();
+            }
+        }
+        
+        // ===============================
+        // INISIALISASI APLIKASI
+        // ===============================
+        
+        function initializeApp() {
+            // Load custom brokers
+            customBrokers = loadCustomBrokers();
+            
+            // Initialize upload zone
+            initializeUploadZone();
+            
+            // Set up date input
+            document.getElementById('dateInput').addEventListener('change', function(e) {
+                selectedDate = e.target.value;
+            });
+            
+            // Set up broker selection
+            document.getElementById('brokerSelect').addEventListener('change', function(e) {
+                if (e.target.value === 'custom') {
+                    document.getElementById('customBrokerInput').style.display = 'block';
+                    document.getElementById('customBrokerInput').focus();
+                } else {
+                    document.getElementById('customBrokerInput').style.display = 'none';
+                    selectedBroker = e.target.value;
+                    updateBrokerTags();
+                }
+            });
+            
+            // Set up custom broker input
+            document.getElementById('customBrokerInput').addEventListener('change', function(e) {
+                const customBroker = e.target.value.toUpperCase();
+                if (customBroker && !customBrokers.includes(customBroker)) {
+                    customBrokers.push(customBroker);
+                    saveCustomBrokers(customBrokers);
+                }
+                selectedBroker = customBroker;
+                updateBrokerTags();
+            });
+            
+            // Set up analyze buttons
+            document.getElementById('analyzeBtn').addEventListener('click', performAnalysis);
+            document.getElementById('compareBtn').addEventListener('click', performComparativeAnalysis);
+            
+            // Set up export buttons
+            document.getElementById('exportBtn').addEventListener('click', performAnalysis);
+            document.getElementById('exportPdfBtn').addEventListener('click', exportToPDF);
+            document.getElementById('printBtn').addEventListener('click', printReport);
+            
+            // Set up reset button
+            document.getElementById('resetBtn').addEventListener('click', showResetModal);
+            document.getElementById('confirmResetBtn').addEventListener('click', confirmReset);
+            document.getElementById('cancelResetBtn').addEventListener('click', hideResetModal);
+            
+            // Set up PIN input to submit on Enter
+            document.getElementById('pinInput').addEventListener('keyup', function(e) {
+                if (e.key === 'Enter') {
+                    confirmReset();
+                }
+            });
+            
+            // Set up upload summary modal close button
+            document.getElementById('closeSummaryBtn').addEventListener('click', function() {
+                document.getElementById('uploadSummaryModal').style.display = 'none';
+            });
+            
+            // Initialize storage status
+            updateStorageStatus();
+            updateProgress();
+            updateBrokerTags();
+        }
+        
+        // Initialize the app when the page loads
+        document.addEventListener('DOMContentLoaded', initializeApp);
+    </script>
+</body>
+</html>
